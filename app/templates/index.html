@@ -960,7 +960,9 @@ Managed a team of 3 junior developers.</textarea>
                             const nextPageContentTop = gutterTop + gutterH + marginB;
 
                             // Iteratively push elements for the CURRENT page boundary until none cross it
-                            while (true) {
+                            let iters = 0;
+                            while (iters < 100) {
+                                iters++;
                                 const all = Array.from(document.querySelectorAll(selector));
                                 const blocks = all.filter(b => {
                                     let parent = b.parentElement;
@@ -977,8 +979,22 @@ Managed a team of 3 junior developers.</textarea>
                                 let target = null;
                                 for (let b of blocks) {
                                     const rect = b.getBoundingClientRect();
-                                    // Check if it crosses boundary or sits in the gap
-                                    if (rect.bottom > boundary + 0.5 && rect.top < nextPageContentTop - 0.5) {
+                                    
+                                    // 1. Check if the element itself crosses the boundary
+                                    const crosses = (rect.bottom > boundary + 0.5 && rect.top < nextPageContentTop - 0.5);
+                                    
+                                    // 2. "Keep with next" logic for headers:
+                                    // If header is on current page but its next sibling is crossing or already on next page
+                                    let nextCrosses = false;
+                                    const isHeader = b.classList.contains('section-title') || b.tagName === 'H2';
+                                    if (isHeader && rect.top < boundary && b.nextElementSibling) {
+                                        const nextRect = b.nextElementSibling.getBoundingClientRect();
+                                        if (nextRect.bottom > boundary + 0.5) {
+                                            nextCrosses = true;
+                                        }
+                                    }
+
+                                    if (crosses || nextCrosses) {
                                         target = b;
                                         break;
                                     }
@@ -988,7 +1004,13 @@ Managed a team of 3 junior developers.</textarea>
 
                                 const curMargin = parseFloat(window.getComputedStyle(target).marginTop) || 0;
                                 const push = nextPageContentTop - target.getBoundingClientRect().top;
-                                target.style.marginTop = (curMargin + push) + 'px';
+                                if (push > 0) {
+                                    target.style.marginTop = (curMargin + push) + 'px';
+                                } else {
+                                    // Safety: if we find a target but push is 0 or negative, 
+                                    // it means something is wrong with our logic; stop to avoid infinite loop.
+                                    break;
+                                }
                             }
                             
                             if (gutterTop > body.scrollHeight) break;

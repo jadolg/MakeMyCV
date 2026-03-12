@@ -53,6 +53,12 @@
             margin-top: 20px;
             margin-bottom: 10px;
             color: #222;
+            break-after: avoid;
+            page-break-after: avoid;
+        }
+        h2 + * {
+            break-before: avoid;
+            page-break-before: avoid;
         }
         .contact-item {
             font-size: 9pt;
