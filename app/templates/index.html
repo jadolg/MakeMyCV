@@ -276,6 +276,11 @@
                                 value="https://linkedin.com/in/johndoe">
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label" data-translate="github">GitHub (Optional)</label>
+                            <input type="url" class="form-control" name="github"
+                                value="https://github.com/johndoe">
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label" data-translate="profile_picture">Profile Picture
                                 (Optional)</label>
                             <input type="file" class="form-control" id="profile_picture" accept="image/*"
@@ -531,6 +536,7 @@
                 location_placeholder: "City, Country",
                 website: "Website (Optional)",
                 linkedin: "LinkedIn (Optional)",
+                github: "GitHub (Optional)",
                 profile_picture: "Profile Picture (Optional)",
                 summary: "About me",
                 experience_header: "Experience",
@@ -581,6 +587,7 @@
                 location_placeholder: "Ciudad, País",
                 website: "Sitio Web (Opcional)",
                 linkedin: "LinkedIn (Opcional)",
+                github: "GitHub (Opcional)",
                 profile_picture: "Foto de Perfil (Opcional)",
                 summary: "Sobre mí",
                 experience_header: "Experiencia",
@@ -759,6 +766,7 @@
                     location: formData.get('location'),
                     website: formData.get('website'),
                     linkedin: formData.get('linkedin'),
+                    github: formData.get('github'),
                     profile_picture: previewVisible ? previewImg.src : null,
                     summary: formData.get('summary')
                 },
@@ -866,6 +874,7 @@
                 form.querySelector('[name="location"]').value = pi.location || '';
                 form.querySelector('[name="website"]').value = pi.website || '';
                 form.querySelector('[name="linkedin"]').value = pi.linkedin || '';
+                form.querySelector('[name="github"]').value = pi.github || '';
                 form.querySelector('[name="summary"]').value = pi.summary || '';
 
                 if (pi.profile_picture && (pi.profile_picture.startsWith('http://') || pi.profile_picture.startsWith('https://') || pi.profile_picture.startsWith('data:image/'))) {

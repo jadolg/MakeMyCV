@@ -8,6 +8,7 @@ class PersonalInfo(BaseModel):
     location: str
     website: Optional[str] = None
     linkedin: Optional[str] = None
+    github: Optional[str] = None
     profile_picture: Optional[str] = None
     summary: str
 
