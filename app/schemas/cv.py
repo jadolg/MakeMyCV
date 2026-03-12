@@ -35,6 +35,7 @@ class Experience(BaseModel):
     position: str
     start_date: str
     end_date: str
+    summary: Optional[str] = None
     description: List[str]
 
 class Skill(BaseModel):

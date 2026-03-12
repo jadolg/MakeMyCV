@@ -192,6 +192,7 @@
                 <span class="item-date">{{ exp.start_date }} &ndash; {{ exp.end_date }}</span>
             </div>
             <div class="item-subheader">{{ exp.position }}</div>
+            {% if exp.summary %}<p class="summary-text" style="margin-top: 2px; font-size: 10pt;">{{ exp.summary }}</p>{% endif %}
             <ul class="description-list">
                 {% for point in exp.description %}
                 <li>{{ point }}</li>

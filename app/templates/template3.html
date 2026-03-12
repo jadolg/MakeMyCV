@@ -98,6 +98,9 @@
             font-size: 9pt;
             color: #666;
             margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
         }
         .skill-list {
             font-size: 9pt;
@@ -125,9 +128,6 @@
         <img src="{{ data.personal_info.profile_picture }}" class="profile-img">
         {% endif %}
         <div class="sidebar-content">
-            <h1>{{ data.personal_info.full_name }}</h1>
-            <p style="font-size: 10pt; font-style: italic; white-space: pre-line;">{{ data.personal_info.summary }}</p>
-            
             <h2>{{ t.skills }}</h2>
             <div class="skill-list">
                 {% for skill in data.skills %}
@@ -176,11 +176,20 @@
     </div>
 
     <div class="main">
+        <h1>{{ data.personal_info.full_name }}</h1>
+        
+        <h2>{{ t.summary }}</h2>
+        <p style="font-size: 10.5pt; white-space: pre-line; margin-bottom: 20px;">{{ data.personal_info.summary }}</p>
+
         <h2>{{ t.experience }}</h2>
         {% for exp in data.experience %}
         <div class="item">
             <div class="item-title">{{ exp.position }}</div>
-            <div class="item-meta">{{ exp.company }} | {{ exp.start_date }} - {{ exp.end_date }}</div>
+            <div class="item-meta">
+                <span>{{ exp.company }}</span>
+                <span>{{ exp.start_date }} - {{ exp.end_date }}</span>
+            </div>
+            {% if exp.summary %}<p style="font-size: 10pt; margin-bottom: 5px; font-style: italic; white-space: pre-line;">{{ exp.summary }}</p>{% endif %}
             <ul style="font-size: 10pt; padding-left: 15px;">
                 {% for point in exp.description %}
                 <li>{{ point }}</li>
@@ -193,7 +202,10 @@
         {% for edu in data.education %}
         <div class="item">
             <div class="item-title">{{ edu.institution }}</div>
-            <div class="item-meta">{{ edu.degree }} | {{ edu.start_date }} - {{ edu.end_date }}</div>
+            <div class="item-meta">
+                <span>{{ edu.degree }}</span>
+                <span>{{ edu.start_date }} - {{ edu.end_date }}</span>
+            </div>
             {% if edu.description %}<p style="font-size: 10pt;">{{ edu.description }}</p>{% endif %}
         </div>
         {% endfor %}

@@ -407,6 +407,10 @@
                     </div>
                 </div>
                 <div class="col-12">
+                    <textarea class="form-control" placeholder="Role/Company Description (Optional)" name="summary"
+                        data-translate-placeholder="experience_summary" rows="1"></textarea>
+                </div>
+                <div class="col-12">
                     <textarea class="form-control" placeholder="Key responsibilities (one per line)" name="description"
                         data-translate-placeholder="responsibilities" rows="2" required></textarea>
                 </div>
@@ -546,6 +550,7 @@
                 start_date: "Start Date (e.g. Jan 2020)",
                 end_date: "End Date (or Present)",
                 responsibilities: "Key responsibilities (one per line)",
+                experience_summary: "Role/Company Description (Optional)",
                 institution: "Institution",
                 degree: "Degree",
                 start_date_edu: "Start Date",
@@ -594,6 +599,7 @@
                 start_date: "Fecha de Inicio (ej. Ene 2020)",
                 end_date: "Fecha de Fin (o Presente)",
                 responsibilities: "Responsabilidades clave (una por línea)",
+                experience_summary: "Descripción del puesto/empresa (Opcional)",
                 institution: "Institución",
                 degree: "Título",
                 start_date_edu: "Fecha de Inicio",
@@ -765,6 +771,7 @@
                     start_date: item.querySelector('[name="start_date"]').value,
                     end_date: item.querySelector('[name="end_date"]').value,
                     is_present: item.querySelector('[name="is_present"]').checked,
+                    summary: item.querySelector('[name="summary"]').value,
                     description: item.querySelector('[name="description"]').value.split('\n').filter(line => line.trim() !== '')
                 });
             });
@@ -882,6 +889,7 @@
                         id: 'experience-list', template: 'experience-template', items: data.experience, fill: (el, d) => {
                             el.querySelector('[name="company"]').value = d.company || '';
                             el.querySelector('[name="position"]').value = d.position || '';
+                            el.querySelector('[name="summary"]').value = d.summary || '';
                             el.querySelector('[name="description"]').value = (d.description || []).join('\n');
                             
                             const isPresent = d.is_present || d.end_date === translations.en.present || d.end_date === translations.es.present || d.end_date === 'Present' || d.end_date === 'Actualidad';
