@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from app.schemas.cv import CVData
-from app.utils.pdf import generate_pdf
+from app.utils.pdf import generate_pdf, render_cv_html
 import os
 import jinja2
 
@@ -33,6 +33,17 @@ async def generate(cv_data: CVData):
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={cv_data.personal_info.full_name.replace(' ', '_')}_CV.pdf"}
     )
+
+@app.post("/preview")
+async def preview(cv_data: CVData):
+    try:
+        html_content = render_cv_html(cv_data.model_dump(), cv_data.template_name)
+    except jinja2.exceptions.TemplateNotFound:
+        raise HTTPException(status_code=400, detail=f"Template {cv_data.template_name} not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    return Response(content=html_content, media_type="text/html")
 
 if __name__ == "__main__":
     import uvicorn

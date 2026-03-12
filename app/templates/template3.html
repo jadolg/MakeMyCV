@@ -8,12 +8,13 @@
             margin: 1cm;
         }
         body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-family: 'Liberation Sans', Arial, Helvetica, sans-serif;
             color: #444;
             line-height: 1.5;
             margin: 0;
             padding: 0;
             display: flex;
+            min-height: 297mm;
         }
         .sidebar {
             width: 30%;
@@ -82,6 +83,20 @@
         }
         .skill-list li {
             margin-bottom: 3px;
+        }
+        @media screen {
+            html {
+                background-color: #f0f2f5;
+                padding: 40px 0;
+            }
+            body {
+                width: 210mm;
+                margin: 0 auto;
+                background-color: white;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                box-sizing: border-box;
+                padding: 1cm;
+            }
         }
     </style>
 </head>

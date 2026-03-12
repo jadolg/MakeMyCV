@@ -154,7 +154,8 @@
             </div>
         </div>
 
-        <div class="text-center mt-4">
+        <div class="text-center mt-4 d-flex justify-content-center gap-3">
+            <button type="button" class="btn btn-outline-secondary btn-lg px-5" data-translate="preview_btn" onclick="previewCV()">Preview CV</button>
             <button type="submit" class="btn btn-primary btn-lg px-5" data-translate="generate_btn">Generate CV (PDF)</button>
         </div>
     </form>
@@ -256,6 +257,7 @@ Managed a team of 3 junior developers.</textarea>
             template_classic: "Classic",
             template_minimalist: "Minimalist",
             generate_btn: "Generate CV (PDF)",
+            preview_btn: "Preview CV",
             company: "Company",
             position: "Position",
             start_date: "Start Date (e.g. Jan 2020)",
@@ -294,6 +296,7 @@ Managed a team of 3 junior developers.</textarea>
             template_classic: "Clásico",
             template_minimalist: "Minimalista",
             generate_btn: "Generar CV (PDF)",
+            preview_btn: "Vista Previa",
             company: "Empresa",
             position: "Cargo",
             start_date: "Fecha de Inicio (ej. Ene 2020)",
@@ -517,6 +520,33 @@ Managed a team of 3 junior developers.</textarea>
     // Event listeners for persistence
     document.getElementById('cvForm').addEventListener('input', saveData);
     document.getElementById('languageSelector').addEventListener('change', saveData);
+
+    async function previewCV() {
+        const form = document.getElementById('cvForm');
+        
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            const firstInvalid = form.querySelector(':invalid');
+            if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        const data = collectData();
+        const response = await fetch('/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            const html = await response.text();
+            const previewWindow = window.open('', '_blank');
+            previewWindow.document.write(html);
+            previewWindow.document.close();
+        } else {
+            alert('Error generating preview');
+        }
+    }
 
     document.getElementById('cvForm').onsubmit = async (e) => {
         e.preventDefault();
