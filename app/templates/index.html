@@ -534,7 +534,8 @@ Managed a team of 3 junior developers.</textarea>
                 confirm_load_title: "Confirm Load",
                 confirm_load_body: "Are you sure you want to load a new file? This will overwrite your current progress.",
                 cancel: "Cancel",
-                confirm: "Confirm"
+                confirm: "Confirm",
+                invalid_image: "Please upload a valid image file (PNG, JPG, or WEBP)."
             },
             es: {
                 personal_info_header: "Información Personal",
@@ -580,7 +581,8 @@ Managed a team of 3 junior developers.</textarea>
                 confirm_load_title: "Confirmar Carga",
                 confirm_load_body: "¿Estás seguro de que quieres cargar un nuevo archivo? Esto sobrescribirá tu progreso actual.",
                 cancel: "Cancelar",
-                confirm: "Confirmar"
+                confirm: "Confirmar",
+                invalid_image: "Por favor, sube un archivo de imagen válido (PNG, JPG o WEBP)."
             }
         };
 
@@ -650,14 +652,27 @@ Managed a team of 3 junior developers.</textarea>
         function previewImage(input) {
             const preview = document.getElementById('image-preview');
             const previewImg = document.getElementById('preview-img');
+            const lang = document.getElementById('languageSelector').value;
+            
             if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Validate if it is an image
+                if (!file.type.startsWith('image/')) {
+                    alert(translations[lang].invalid_image);
+                    input.value = ''; // Clear the input
+                    preview.style.display = 'none';
+                    saveData();
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     previewImg.src = e.target.result;
                     preview.style.display = 'block';
                     saveData();
                 }
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             } else {
                 preview.style.display = 'none';
                 saveData();
@@ -751,7 +766,7 @@ Managed a team of 3 junior developers.</textarea>
                 form.querySelector('[name="linkedin"]').value = pi.linkedin || '';
                 form.querySelector('[name="summary"]').value = pi.summary || '';
 
-                if (pi.profile_picture) {
+                if (pi.profile_picture && (pi.profile_picture.startsWith('http://') || pi.profile_picture.startsWith('https://') || pi.profile_picture.startsWith('data:image/'))) {
                     const preview = document.getElementById('image-preview');
                     const previewImg = document.getElementById('preview-img');
                     previewImg.src = pi.profile_picture;
