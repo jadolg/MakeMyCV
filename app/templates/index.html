@@ -95,7 +95,7 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            background: #e9ecef;
+            background: #cdd0d4;
             border-left: 1px solid #dee2e6;
         }
 
@@ -124,21 +124,26 @@
             display: none;
         }
 
-        #preview-iframe {
+        /* Scrollable viewport for the scaled iframe */
+        #preview-scroll {
             flex: 1;
-            width: 100%;
-            border: none;
-            background: white;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 16px 0;
+            box-sizing: border-box;
         }
 
-        /* A4 scale hint */
-        #preview-scale-hint {
-            font-size: 0.75rem;
-            color: #adb5bd;
-            padding: 4px 16px;
-            background: #f8f9fa;
-            border-top: 1px solid #dee2e6;
-            flex-shrink: 0;
+        /* Wrapper that holds the iframe at its natural size and is scaled down */
+        #preview-scaler {
+            transform-origin: top center;
+            /* width/transform set dynamically by JS */
+        }
+
+        #preview-iframe {
+            display: block;
+            border: none;
+            /* width/height set dynamically by JS */
+            box-shadow: 0 4px 24px rgba(0,0,0,0.25);
         }
     </style>
 </head>
@@ -307,8 +312,11 @@
                 <h6>Live Preview</h6>
                 <span id="preview-loading">Updating…</span>
             </div>
-            <iframe id="preview-iframe" title="CV Preview"></iframe>
-            <div id="preview-scale-hint">Preview may differ slightly from the exported PDF due to page scaling.</div>
+            <div id="preview-scroll">
+                <div id="preview-scaler">
+                    <iframe id="preview-iframe" title="CV Preview"></iframe>
+                </div>
+            </div>
         </div>
 
     </div><!-- end #app-shell -->
@@ -689,9 +697,7 @@ Managed a team of 3 junior developers.</textarea>
 
                 if (response.ok) {
                     const html = await response.text();
-                    const iframe = document.getElementById('preview-iframe');
-                    // Write to srcdoc to avoid navigation / CORS issues
-                    iframe.srcdoc = html;
+                    setPreviewContent(html);
                 }
             } catch (err) {
                 console.warn('Preview refresh failed', err);
@@ -699,6 +705,140 @@ Managed a team of 3 junior developers.</textarea>
                 loadingEl.style.display = 'none';
             }
         }
+
+        // ── PDF-like paginated preview ────────────────────────────
+        // A4 dimensions at 96 dpi: 210mm × 297mm
+        const A4_W_PX = 794;   // ~210mm
+        const A4_H_PX = 1123;  // ~297mm
+
+        const PAGE_GAP = 186; // 1.5cm + 72px + 1.5cm
+
+        function buildPagedHTML(rawHtml) {
+            // Inject CSS that forces A4 width and styles the page-gutter divs.
+            // The gutters are thick opaque grey bands with drop-shadows on their
+            // top/bottom edges to simulate real paper sheets viewed in a PDF reader.
+            const injectedCSS = `
+                <style id="__preview_inject__">
+                    html {
+                        background: transparent !important;
+                        padding: 0 !important;
+                    }
+                    body {
+                        width: ${A4_W_PX}px !important;
+                        margin: 0 !important;
+                        box-shadow: none !important;
+                        position: relative;
+                        /* min-height set by script after gutter calculation */
+                    }
+                    /* Grey gutter band between pages */
+                    .page-gutter {
+                        position: absolute;
+                        left: -100px;
+                        width: calc(100% + 200px);
+                        height: 72px;
+                        background: #b0b8c1;
+                        pointer-events: none;
+                        z-index: 9999;
+                        box-shadow:
+                            0  4px  8px -2px rgba(0,0,0,0.2) inset,
+                            0 -4px  8px -2px rgba(0,0,0,0.2) inset;
+                        box-sizing: content-box;
+                        border-top: 1.5cm solid white;
+                        border-bottom: 1.5cm solid white;
+                        margin-top: -1.5cm;
+                    }
+                    /* "Page N" label on the top edge of each new page */
+                    .page-gutter::after {
+                        content: 'Page ' attr(data-next-page);
+                        position: absolute;
+                        left: 8px;
+                        bottom: -20px;
+                        font-size: 9px;
+                        font-family: sans-serif;
+                        font-weight: 700;
+                        letter-spacing: 0.04em;
+                        color: #6c757d;
+                        background: transparent;
+                        text-transform: uppercase;
+                    }
+                </style>`;
+
+            // After load:
+            //  1. Compute how many A4 pages the content spans.
+            //  2. For each page boundary, shift all content below it down by PAGE_GAP
+            //     by wrapping in a spacer div — we do this simply by expanding body
+            //     height and repositioning gutters to include cumulative gap offsets.
+            //  3. Report the final total height to the parent so it can size the iframe.
+            //
+            // NOTE: We don't physically move DOM nodes (too complex). Instead we
+            // increase body min-height by (pages-1)*PAGE_GAP and place each gutter
+            // at its adjusted position. Content behind the gutter is still there
+            // (the grey band just overlaps it), which is fine for a preview.
+            const injectedScript = `
+                <script>
+                    window.addEventListener('load', function() {
+                        var body = document.body;
+                        var contentH = body.scrollHeight;
+                        var pageH    = ${A4_H_PX};
+                        var gapH     = ${PAGE_GAP};
+                        var pages    = Math.ceil(contentH / pageH);
+
+                        // Expand body to make room for all gutters
+                        var totalH = contentH + (pages - 1) * gapH;
+                        body.style.minHeight = totalH + 'px';
+
+                        // Insert gutter divs: each one sits at the boundary position
+                        // shifted down by the cumulative gutter offset
+                        for (var p = 1; p < pages; p++) {
+                            var gutter = document.createElement('div');
+                            gutter.className = 'page-gutter';
+                            gutter.setAttribute('data-next-page', p + 1);
+                            gutter.style.top = (p * pageH + (p - 1) * gapH) + 'px';
+                            body.appendChild(gutter);
+                        }
+
+                        window.parent.postMessage({ type: 'previewHeight', height: totalH }, '*');
+                    });
+                <\/script>`;
+
+            return rawHtml
+                .replace('</head>', injectedCSS + '</head>')
+                .replace('</body>', injectedScript + '</body>');
+        }
+
+        function setPreviewContent(rawHtml) {
+            const iframe = document.getElementById('preview-iframe');
+            const scaler = document.getElementById('preview-scaler');
+            const scroll = document.getElementById('preview-scroll');
+
+            iframe.style.width  = A4_W_PX + 'px';
+            iframe.style.height = A4_H_PX + 'px'; // expands after postMessage
+
+            const availW = scroll.clientWidth;
+            const scale  = Math.min(1, availW / A4_W_PX);
+            scaler.style.width     = A4_W_PX + 'px';
+            scaler.style.transform = `scale(${scale})`;
+
+            iframe.srcdoc = buildPagedHTML(rawHtml);
+        }
+
+        // Resize the iframe and its scaler wrapper once the iframe content
+        // reports its full height (including gutters).
+        window.addEventListener('message', function(e) {
+            if (!e.data || e.data.type !== 'previewHeight') return;
+            const iframe = document.getElementById('preview-iframe');
+            const scaler = document.getElementById('preview-scaler');
+            const totalH = e.data.height;
+
+            iframe.style.height = totalH + 'px';
+
+            // Keep the scaler wrapper tall enough so the scroll container
+            // scrolls to show all pages (scale shrinks the visual size).
+            const scale = parseFloat(
+                (scaler.style.transform.match(/scale\(([^)]+)\)/) || [, '1'])[1]
+            );
+            scaler.style.height = Math.ceil(totalH * scale) + 'px';
+        });
 
         function schedulePreviewRefresh() {
             clearTimeout(previewDebounceTimer);
