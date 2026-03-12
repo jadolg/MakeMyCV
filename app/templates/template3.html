@@ -81,12 +81,8 @@
             margin-bottom: 5px;
         }
         .skill-list {
-            list-style: none;
-            padding: 0;
             font-size: 9pt;
-        }
-        .skill-list li {
-            margin-bottom: 3px;
+            margin-bottom: 5px;
         }
         @media screen {
             html {
@@ -114,11 +110,11 @@
             <p style="font-size: 10pt; font-style: italic;">{{ data.personal_info.summary }}</p>
             
             <h2>{{ t.skills }}</h2>
-            <ul class="skill-list">
+            <div class="skill-list">
                 {% for skill in data.skills %}
-                <li><strong>{{ skill.name }}</strong></li>
+                <strong>{{ skill.name }}</strong>{% if not loop.last %}, {% endif %}
                 {% endfor %}
-            </ul>
+            </div>
             
             <h2>{{ t.contact }}</h2>
             <div class="contact-item">
@@ -151,11 +147,11 @@
 
             {% if data.languages %}
             <h2>{{ t.languages }}</h2>
-            <ul class="skill-list">
+            <div class="skill-list">
                 {% for lang in data.languages %}
-                <li>{{ lang }}</li>
+                {{ lang }}{% if not loop.last %}, {% endif %}
                 {% endfor %}
-            </ul>
+            </div>
             {% endif %}
         </div>
     </div>

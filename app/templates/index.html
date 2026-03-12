@@ -176,13 +176,22 @@
 
         <!-- ════════ Left: Form ════════ -->
         <div id="form-panel">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
                 <h1 class="mb-0">MakeMyCV</h1>
-                <div style="width: 150px;">
-                    <select id="languageSelector" class="form-select" onchange="switchLanguage()">
-                        <option value="en" selected>English</option>
-                        <option value="es">Español</option>
-                    </select>
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportToJson()"
+                        data-translate="save_json">Save to File</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                        onclick="document.getElementById('importFile').click()" data-translate="load_json">Load from
+                        File</button>
+                    <input type="file" id="importFile" style="display: none;" accept=".json"
+                        onchange="importFromJson(this)">
+                    <div style="width: 150px;">
+                        <select id="languageSelector" class="form-select" onchange="switchLanguage()">
+                            <option value="en" selected>English</option>
+                            <option value="es">Español</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -465,6 +474,8 @@ Managed a team of 3 junior developers.</textarea>
                 template_classic: "Classic",
                 template_minimalist: "Minimalist",
                 generate_btn: "Generate CV (PDF)",
+                save_json: "Save to File",
+                load_json: "Load from File",
                 company: "Company",
                 position: "Position",
                 start_date: "Start Date (e.g. Jan 2020)",
@@ -502,6 +513,8 @@ Managed a team of 3 junior developers.</textarea>
                 template_classic: "Clásico",
                 template_minimalist: "Minimalista",
                 generate_btn: "Generar CV (PDF)",
+                save_json: "Guardar en Archivo",
+                load_json: "Cargar de Archivo",
                 company: "Empresa",
                 position: "Cargo",
                 start_date: "Fecha de Inicio (ej. Ene 2020)",
@@ -647,12 +660,19 @@ Managed a team of 3 junior developers.</textarea>
             localStorage.setItem('cvData', JSON.stringify(data));
         }
 
-        function loadData() {
-            const saved = localStorage.getItem('cvData');
-            if (!saved) return false;
+        function loadData(data = null) {
+            if (!data) {
+                const saved = localStorage.getItem('cvData');
+                if (!saved) return false;
+                try {
+                    data = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Error loading saved data", e);
+                    return false;
+                }
+            }
 
             try {
-                const data = JSON.parse(saved);
                 const form = document.getElementById('cvForm');
 
                 const pi = data.personal_info;
@@ -669,6 +689,8 @@ Managed a team of 3 junior developers.</textarea>
                     const previewImg = document.getElementById('preview-img');
                     previewImg.src = pi.profile_picture;
                     preview.style.display = 'block';
+                } else {
+                    document.getElementById('image-preview').style.display = 'none';
                 }
 
                 if (data.template_name) {
@@ -723,8 +745,44 @@ Managed a team of 3 junior developers.</textarea>
                 switchLanguage();
                 return true;
             } catch (e) {
-                console.error("Error loading saved data", e);
+                console.error("Error populating form", e);
                 return false;
+            }
+        }
+
+        function exportToJson() {
+            const data = collectData();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const fileName = (data.personal_info.full_name || 'cv').replace(/\s+/g, '_').toLowerCase();
+            a.download = `cv_${fileName}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importFromJson(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (loadData(data)) {
+                            saveData();
+                            schedulePreviewRefresh();
+                        } else {
+                            alert("Failed to import CV data. Invalid file format.");
+                        }
+                    } catch (err) {
+                        console.error("Error importing JSON", err);
+                        alert("Error reading file.");
+                    }
+                    input.value = ''; // reset input
+                };
+                reader.readAsText(input.files[0]);
             }
         }
 
