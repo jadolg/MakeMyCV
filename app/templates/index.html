@@ -941,70 +941,76 @@ Managed a team of 3 junior developers.</textarea>
             //  2. For each page boundary, shift all content below it down by PAGE_GAP
             //     by adding margin-top to the first block on the next page.
             //  3. Report the final total height to the parent so it can size the iframe.
-            //
-            // NOTE: We don't physically split DOM nodes. Instead, we find the first
-            // element that crosses each page boundary and add a large margin-top
-            // (the PAGE_GAP) to push it and all subsequent content to the next page.
-            // We then overlay absolute-positioned gutters on top of these gaps.
             const injectedScript = `
                 <script>
                     window.addEventListener('load', function() {
-                        var body = document.body;
-                        var pageH    = ${A4_H_PX};
-                        var gapH     = ${PAGE_GAP};
-                        var marginB  = 57; // 1.5cm
+                        const body = document.body;
+                        const pageH   = ${A4_H_PX};  // 1123px (A4 at 96dpi)
+                        const marginB = 57;    // 1.5cm
+                        const gutterH = 48;    // Grey band height
+                        const gapH    = ${PAGE_GAP}; // 162px (marginB + gutterH + marginB)
 
-                        // Find all "indivisible" blocks to push
-                        var selector = '.header, .section > *, .section-title, .item, .summary-text, .skills-text';
+                        // Selector for potential atomic blocks across all templates
+                        const selector = '.header, .section > *, .item, h1, h2, h3, p, ul, ol, li, .contact-item, .skill-list, .sidebar-content > *, .main > *';
                         
-                        var p = 1;
-                        while (p < 20) {
-                            var boundary = p * pageH - marginB + (p - 1) * gapH;
-                            var blocks = Array.from(document.querySelectorAll(selector));
-                            
-                            // Filter blocks that CROSS or FOLLOW the boundary
-                            var toPush = blocks.filter(function(b) {
-                                var rect = b.getBoundingClientRect();
-                                var top = rect.top + window.scrollY;
-                                var bottom = rect.bottom + window.scrollY;
-                                return bottom > boundary + 2 && top < boundary + pageH;
-                            });
-                            
-                            if (toPush.length === 0) break;
-                            
-                            // Sort by current top position
-                            toPush.sort(function(a, b) {
-                                return (a.getBoundingClientRect().top + window.scrollY) - (b.getBoundingClientRect().top + window.scrollY);
-                            });
-                            
-                            toPush.forEach(function(b) {
-                                var rect = b.getBoundingClientRect();
-                                var top = rect.top + window.scrollY;
-                                // If this element is still crossing or following the boundary
-                                // (i.e. it hasn't been pushed to the next page yet by a previous push in the same flow)
-                                if (top < boundary + gapH) {
-                                     var cur = parseFloat(window.getComputedStyle(b).marginTop) || 0;
-                                     var push = Math.max(gapH, (boundary + gapH) - top);
-                                     b.style.marginTop = (cur + push) + 'px';
+                        let currentPageTop = 0;
+                        for (let p = 1; p < 20; p++) {
+                            const boundary = currentPageTop + pageH - marginB;
+                            const gutterTop = boundary + marginB;
+                            const nextPageContentTop = gutterTop + gutterH + marginB;
+
+                            // Iteratively push elements for the CURRENT page boundary until none cross it
+                            while (true) {
+                                const all = Array.from(document.querySelectorAll(selector));
+                                const blocks = all.filter(b => {
+                                    let parent = b.parentElement;
+                                    while (parent) {
+                                        if (all.includes(parent)) return false;
+                                        parent = parent.parentElement;
+                                    }
+                                    return true;
+                                });
+
+                                // Find the FIRST element that crosses the boundary
+                                blocks.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+                                
+                                let target = null;
+                                for (let b of blocks) {
+                                    const rect = b.getBoundingClientRect();
+                                    // Check if it crosses boundary or sits in the gap
+                                    if (rect.bottom > boundary + 0.5 && rect.top < nextPageContentTop - 0.5) {
+                                        target = b;
+                                        break;
+                                    }
                                 }
-                            });
+
+                                if (!target) break;
+
+                                const curMargin = parseFloat(window.getComputedStyle(target).marginTop) || 0;
+                                const push = nextPageContentTop - target.getBoundingClientRect().top;
+                                target.style.marginTop = (curMargin + push) + 'px';
+                            }
                             
-                            p++;
+                            if (gutterTop > body.scrollHeight) break;
+                            currentPageTop = gutterTop + gutterH;
                         }
 
-                        var totalH = body.scrollHeight;
-                        // Place gutters as long as they are within body height
-                        for (var i = 1; i < 20; i++) {
-                            var top = i * pageH + (i - 1) * gapH;
-                            if (top > totalH - 100) break;
-                            var gutter = document.createElement('div');
+                        // Final pass: place visual gutters
+                        currentPageTop = 0;
+                        for (let i = 1; i < 20; i++) {
+                            const gutterTop = currentPageTop + pageH;
+                            if (gutterTop > body.scrollHeight - 50) break;
+                            
+                            const gutter = document.createElement('div');
                             gutter.className = 'page-gutter';
                             gutter.setAttribute('data-next-page', i + 1);
-                            gutter.style.top = top + 'px';
+                            gutter.style.top = gutterTop + 'px';
                             body.appendChild(gutter);
+                            
+                            currentPageTop = gutterTop + gutterH;
                         }
 
-                        window.parent.postMessage({ type: 'previewHeight', height: totalH }, '*');
+                        window.parent.postMessage({ type: 'previewHeight', height: body.scrollHeight }, '*');
                     });
                 <\/script>`;
 
