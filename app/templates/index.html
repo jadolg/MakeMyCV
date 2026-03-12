@@ -633,7 +633,13 @@
             const container = document.getElementById(containerId);
             const template = document.getElementById(templateId);
             const clone = template.content.cloneNode(true);
+            const newElement = clone.firstElementChild;
             container.appendChild(clone);
+            
+            // Auto-focus the first input field in the new item
+            const firstInput = newElement.querySelector('input, textarea');
+            if (firstInput) firstInput.focus();
+
             switchLanguage();
             schedulePreviewRefresh();
         }
