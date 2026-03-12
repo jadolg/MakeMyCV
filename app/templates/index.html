@@ -179,10 +179,12 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
                 <h1 class="mb-0">MakeMyCV</h1>
                 <div class="d-flex gap-2 align-items-center flex-wrap">
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                        data-bs-target="#resetModal" data-translate="reset_btn">Reset</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportToJson()"
                         data-translate="save_json">Save to File</button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary"
-                        onclick="document.getElementById('importFile').click()" data-translate="load_json">Load from
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                        data-bs-target="#loadModal" data-translate="load_json">Load from
                         File</button>
                     <input type="file" id="importFile" style="display: none;" accept=".json"
                         onchange="importFromJson(this)">
@@ -447,6 +449,45 @@ Managed a team of 3 junior developers.</textarea>
         </div>
     </template>
 
+    <!-- Reset Confirmation Modal -->
+    <div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resetModalLabel" data-translate="confirm_reset_title">Confirm Reset</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" data-translate="confirm_reset_body">
+                    Are you sure you want to reset the whole interface to the default state? All your changes will be lost.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-translate="cancel">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="resetToDefault()" data-translate="confirm">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Confirmation Modal -->
+    <div class="modal fade" id="loadModal" tabindex="-1" aria-labelledby="loadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loadModalLabel" data-translate="confirm_load_title">Confirm Load</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" data-translate="confirm_load_body">
+                    Are you sure you want to load a new file? This will overwrite your current progress.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-translate="cancel">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="triggerImport()" data-translate="confirm">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const translations = {
             en: {
@@ -486,7 +527,14 @@ Managed a team of 3 junior developers.</textarea>
                 start_date_edu: "Start Date",
                 end_date_edu: "End Date",
                 skill: "Skill",
-                remove_item: "Remove"
+                remove_item: "Remove",
+                reset_btn: "Reset",
+                confirm_reset_title: "Confirm Reset",
+                confirm_reset_body: "Are you sure you want to reset the whole interface to the default state? All your changes will be lost.",
+                confirm_load_title: "Confirm Load",
+                confirm_load_body: "Are you sure you want to load a new file? This will overwrite your current progress.",
+                cancel: "Cancel",
+                confirm: "Confirm"
             },
             es: {
                 personal_info_header: "Información Personal",
@@ -525,7 +573,14 @@ Managed a team of 3 junior developers.</textarea>
                 start_date_edu: "Fecha de Inicio",
                 end_date_edu: "Fecha de Fin",
                 skill: "Habilidad",
-                remove_item: "Eliminar"
+                remove_item: "Eliminar",
+                reset_btn: "Reiniciar",
+                confirm_reset_title: "Confirmar Reinicio",
+                confirm_reset_body: "¿Estás seguro de que quieres reiniciar toda la interfaz al estado predeterminado? Se perderán todos tus cambios.",
+                confirm_load_title: "Confirmar Carga",
+                confirm_load_body: "¿Estás seguro de que quieres cargar un nuevo archivo? Esto sobrescribirá tu progreso actual.",
+                cancel: "Cancelar",
+                confirm: "Confirmar"
             }
         };
 
@@ -542,6 +597,18 @@ Managed a team of 3 junior developers.</textarea>
                 const key = el.getAttribute('data-translate-placeholder');
                 if (t[key]) el.placeholder = t[key];
             });
+        }
+
+        function triggerImport() {
+            const modalEl = document.getElementById('loadModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            document.getElementById('importFile').click();
+        }
+
+        function resetToDefault() {
+            localStorage.removeItem('cvData');
+            window.location.reload();
         }
 
         function addItem(containerId, templateId) {
