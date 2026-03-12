@@ -5,7 +5,7 @@ import os
 TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
 
 def render_cv_html(cv_data: dict, template_name: str) -> str:
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader(TEMPLATES_DIR))
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(TEMPLATES_DIR), autoescape=True)
     template_file = f"{template_name}.html"
     template = env.get_template(template_file)
     
