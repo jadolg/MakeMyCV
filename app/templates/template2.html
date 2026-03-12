@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ data.personal_info.full_name }} - CV</title>
+    <style>
+        @page {
+            margin: 1.5cm;
+        }
+        body {
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            color: #111;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28pt;
+            font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #000;
+        }
+        .contact-info {
+            font-size: 10pt;
+            margin-top: 10px;
+            color: #444;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .contact-item {
+            display: inline-flex;
+            align-items: center;
+        }
+        .contact-icon {
+            width: 10pt;
+            height: 10pt;
+            margin-right: 4px;
+        }
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        .section-title {
+            font-size: 12pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1.5px solid #000;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            letter-spacing: 1.5px;
+            padding-bottom: 2px;
+        }
+        .item {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 11pt;
+        }
+        .item-title {
+            color: #000;
+        }
+        .item-date {
+            font-weight: normal;
+            font-style: italic;
+            color: #555;
+        }
+        .item-subheader {
+            font-style: italic;
+            font-size: 10.5pt;
+            color: #333;
+            margin-top: 2px;
+        }
+        .description-list {
+            margin: 6px 0;
+            padding-left: 25px;
+            font-size: 10pt;
+        }
+        .description-list li {
+            margin-bottom: 3px;
+        }
+        .summary-text {
+            font-size: 10.5pt;
+            text-align: justify;
+            font-style: italic;
+            color: #222;
+        }
+        .skills-text {
+            font-size: 10.5pt;
+        }
+        .clear {
+            clear: both;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if data.personal_info.profile_picture %}
+        <img src="{{ data.personal_info.profile_picture }}" class="profile-img">
+        <br>
+        {% endif %}
+        <h1>{{ data.personal_info.full_name }}</h1>
+        <div class="contact-info">
+            <span class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                {{ data.personal_info.location }}
+            </span>
+            <span class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                {{ data.personal_info.email }}
+            </span>
+            {% if data.personal_info.phone %}
+            <span class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                {{ data.personal_info.phone }}
+            </span>
+            {% endif %}
+            {% if data.personal_info.website %}
+            <span class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                {{ data.personal_info.website }}
+            </span>
+            {% endif %}
+            {% if data.personal_info.linkedin %}
+            <span class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                {{ data.personal_info.linkedin }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">{{ t.summary }}</div>
+        <div class="summary-text">{{ data.personal_info.summary }}</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">{{ t.experience }}</div>
+        {% for exp in data.experience %}
+        <div class="item">
+            <div class="item-header">
+                <span class="item-title">{{ exp.company }}</span>
+                <span class="item-date">{{ exp.start_date }} &ndash; {{ exp.end_date }}</span>
+            </div>
+            <div class="item-subheader">{{ exp.position }}</div>
+            <ul class="description-list">
+                {% for point in exp.description %}
+                <li>{{ point }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <div class="section-title">{{ t.education }}</div>
+        {% for edu in data.education %}
+        <div class="item">
+            <div class="item-header">
+                <span class="item-title">{{ edu.institution }}</span>
+                <span class="item-date">{{ edu.start_date }} &ndash; {{ edu.end_date }}</span>
+            </div>
+            <div class="item-subheader">{{ edu.degree }}</div>
+            {% if edu.description %}<p style="font-size: 10pt; margin-top: 5px;">{{ edu.description }}</p>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <div class="section-title">{{ t.skills }}</div>
+        <div class="skills-text">
+            {% for skill in data.skills %}
+            <strong>{{ skill.name }}</strong>{% if skill.level %} ({{ skill.level }}){% endif %}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if data.languages %}
+    <div class="section">
+        <div class="section-title">{{ t.languages }}</div>
+        <div class="skills-text">
+            {% for lang in data.languages %}
+            {{ lang }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>
