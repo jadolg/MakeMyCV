@@ -186,7 +186,7 @@
         <div class="item">
             <div class="item-title">{{ exp.position }}</div>
             <div class="item-meta">
-                <span>{{ exp.company }}</span>
+                <span><strong>{{ exp.company }}</strong>{% if exp.location %} {{ t.in }} {{ exp.location }}{% endif %}</span>
                 <span>{{ exp.start_date }} - {{ exp.end_date }}</span>
             </div>
             {% if exp.summary %}<p style="font-size: 10pt; margin-bottom: 5px; font-style: italic; white-space: pre-line;">{{ exp.summary }}</p>{% endif %}

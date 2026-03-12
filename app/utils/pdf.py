@@ -22,7 +22,8 @@ def render_cv_html(cv_data: dict, template_name: str) -> str:
             "phone": "Phone",
             "email": "Email",
             "location": "Location",
-            "at": "at"
+            "at": "at",
+            "in": "in"
         },
         "es": {
             "summary": "Sobre mí",
@@ -36,7 +37,8 @@ def render_cv_html(cv_data: dict, template_name: str) -> str:
             "phone": "Teléfono",
             "email": "Correo Electrónico",
             "location": "Ubicación",
-            "at": "en"
+            "at": "en",
+            "in": "en"
         }
     }
     lang = cv_data.get("language", "en")

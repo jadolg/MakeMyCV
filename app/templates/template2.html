@@ -77,14 +77,14 @@
         .item-header {
             display: flex;
             justify-content: space-between;
-            font-weight: bold;
             font-size: 11pt;
         }
         .item-title {
             color: #000;
+            font-weight: bold;
         }
         .item-date {
-            font-weight: normal;
+            font-weight: bold;
             font-style: italic;
             color: #555;
         }
@@ -188,7 +188,7 @@
         {% for exp in data.experience %}
         <div class="item">
             <div class="item-header">
-                <span class="item-title">{{ exp.company }}</span>
+                <span class="item-title"><strong>{{ exp.company }}</strong>{% if exp.location %} {{ t.in }} {{ exp.location }}{% endif %}</span>
                 <span class="item-date">{{ exp.start_date }} &ndash; {{ exp.end_date }}</span>
             </div>
             <div class="item-subheader">{{ exp.position }}</div>

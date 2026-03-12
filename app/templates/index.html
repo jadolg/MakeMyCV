@@ -384,13 +384,17 @@
                     data-translate="remove_item">Remove</button>
             </div>
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <input type="text" class="form-control" placeholder="Company" name="company"
                         data-translate-placeholder="company" required>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <input type="text" class="form-control" placeholder="Position" name="position"
                         data-translate-placeholder="position" required>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" placeholder="Location (Optional)" name="location"
+                        data-translate-placeholder="location">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" data-translate="start_date_edu">Start Date</label>
@@ -565,7 +569,8 @@
                 cancel: "Cancel",
                 confirm: "Confirm",
                 invalid_image: "Please upload a valid image file (PNG, JPG, or WEBP).",
-                present: "Present"
+                present: "Present",
+                in: "in"
             },
             es: {
                 personal_info_header: "Información Personal",
@@ -614,7 +619,8 @@
                 cancel: "Cancelar",
                 confirm: "Confirmar",
                 invalid_image: "Por favor, sube un archivo de imagen válido (PNG, JPG o WEBP).",
-                present: "Actualidad"
+                present: "Actualidad",
+                in: "en"
             }
         };
 
@@ -768,6 +774,7 @@
                 data.experience.push({
                     company: item.querySelector('[name="company"]').value,
                     position: item.querySelector('[name="position"]').value,
+                    location: item.querySelector('[name="location"]').value,
                     start_date: item.querySelector('[name="start_date"]').value,
                     end_date: item.querySelector('[name="end_date"]').value,
                     is_present: item.querySelector('[name="is_present"]').checked,
@@ -889,6 +896,7 @@
                         id: 'experience-list', template: 'experience-template', items: data.experience, fill: (el, d) => {
                             el.querySelector('[name="company"]').value = d.company || '';
                             el.querySelector('[name="position"]').value = d.position || '';
+                            el.querySelector('[name="location"]').value = d.location || '';
                             el.querySelector('[name="summary"]').value = d.summary || '';
                             el.querySelector('[name="description"]').value = (d.description || []).join('\n');
                             
