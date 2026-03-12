@@ -711,7 +711,7 @@ Managed a team of 3 junior developers.</textarea>
         const A4_W_PX = 794;   // ~210mm
         const A4_H_PX = 1123;  // ~297mm
 
-        const PAGE_GAP = 186; // 1.5cm + 72px + 1.5cm
+        const PAGE_GAP = 162; // 1.5cm + 48px + 1.5cm
 
         function buildPagedHTML(rawHtml) {
             // Inject CSS that forces A4 width and styles the page-gutter divs.
@@ -735,7 +735,7 @@ Managed a team of 3 junior developers.</textarea>
                         position: absolute;
                         left: -100px;
                         width: calc(100% + 200px);
-                        height: 72px;
+                        height: 48px;
                         background: #b0b8c1;
                         pointer-events: none;
                         z-index: 9999;
@@ -766,34 +766,68 @@ Managed a team of 3 junior developers.</textarea>
             // After load:
             //  1. Compute how many A4 pages the content spans.
             //  2. For each page boundary, shift all content below it down by PAGE_GAP
-            //     by wrapping in a spacer div — we do this simply by expanding body
-            //     height and repositioning gutters to include cumulative gap offsets.
+            //     by adding margin-top to the first block on the next page.
             //  3. Report the final total height to the parent so it can size the iframe.
             //
-            // NOTE: We don't physically move DOM nodes (too complex). Instead we
-            // increase body min-height by (pages-1)*PAGE_GAP and place each gutter
-            // at its adjusted position. Content behind the gutter is still there
-            // (the grey band just overlaps it), which is fine for a preview.
+            // NOTE: We don't physically split DOM nodes. Instead, we find the first
+            // element that crosses each page boundary and add a large margin-top
+            // (the PAGE_GAP) to push it and all subsequent content to the next page.
+            // We then overlay absolute-positioned gutters on top of these gaps.
             const injectedScript = `
                 <script>
                     window.addEventListener('load', function() {
                         var body = document.body;
-                        var contentH = body.scrollHeight;
                         var pageH    = ${A4_H_PX};
                         var gapH     = ${PAGE_GAP};
-                        var pages    = Math.ceil(contentH / pageH);
+                        var marginB  = 57; // 1.5cm
 
-                        // Expand body to make room for all gutters
-                        var totalH = contentH + (pages - 1) * gapH;
-                        body.style.minHeight = totalH + 'px';
+                        // Find all "indivisible" blocks to push
+                        var selector = '.header, .section > *, .section-title, .item, .summary-text, .skills-text';
+                        
+                        var p = 1;
+                        while (p < 20) {
+                            var boundary = p * pageH - marginB + (p - 1) * gapH;
+                            var blocks = Array.from(document.querySelectorAll(selector));
+                            
+                            // Filter blocks that CROSS or FOLLOW the boundary
+                            var toPush = blocks.filter(function(b) {
+                                var rect = b.getBoundingClientRect();
+                                var top = rect.top + window.scrollY;
+                                var bottom = rect.bottom + window.scrollY;
+                                return bottom > boundary + 2 && top < boundary + pageH;
+                            });
+                            
+                            if (toPush.length === 0) break;
+                            
+                            // Sort by current top position
+                            toPush.sort(function(a, b) {
+                                return (a.getBoundingClientRect().top + window.scrollY) - (b.getBoundingClientRect().top + window.scrollY);
+                            });
+                            
+                            toPush.forEach(function(b) {
+                                var rect = b.getBoundingClientRect();
+                                var top = rect.top + window.scrollY;
+                                // If this element is still crossing or following the boundary
+                                // (i.e. it hasn't been pushed to the next page yet by a previous push in the same flow)
+                                if (top < boundary + gapH) {
+                                     var cur = parseFloat(window.getComputedStyle(b).marginTop) || 0;
+                                     var push = Math.max(gapH, (boundary + gapH) - top);
+                                     b.style.marginTop = (cur + push) + 'px';
+                                }
+                            });
+                            
+                            p++;
+                        }
 
-                        // Insert gutter divs: each one sits at the boundary position
-                        // shifted down by the cumulative gutter offset
-                        for (var p = 1; p < pages; p++) {
+                        var totalH = body.scrollHeight;
+                        // Place gutters as long as they are within body height
+                        for (var i = 1; i < 20; i++) {
+                            var top = i * pageH + (i - 1) * gapH;
+                            if (top > totalH - 100) break;
                             var gutter = document.createElement('div');
                             gutter.className = 'page-gutter';
-                            gutter.setAttribute('data-next-page', p + 1);
-                            gutter.style.top = (p * pageH + (p - 1) * gapH) + 'px';
+                            gutter.setAttribute('data-next-page', i + 1);
+                            gutter.style.top = top + 'px';
                             body.appendChild(gutter);
                         }
 
