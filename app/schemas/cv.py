@@ -28,7 +28,6 @@ class Experience(BaseModel):
 
 class Skill(BaseModel):
     name: str
-    level: Optional[str] = None
 
 class CVData(BaseModel):
     personal_info: PersonalInfo

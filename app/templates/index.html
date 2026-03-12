@@ -420,8 +420,6 @@ Managed a team of 3 junior developers.</textarea>
                 <button type="button" class="btn btn-outline-secondary" onclick="moveItemDown(this)">↓</button>
                 <input type="text" class="form-control" placeholder="Skill" name="skill_name"
                     data-translate-placeholder="skill" value="Python" required>
-                <input type="text" class="form-control" placeholder="Level" name="skill_level"
-                    data-translate-placeholder="level" value="Expert">
                 <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">×</button>
             </div>
         </div>
@@ -476,7 +474,6 @@ Managed a team of 3 junior developers.</textarea>
                 start_date_edu: "Start Date",
                 end_date_edu: "End Date",
                 skill: "Skill",
-                level: "Level",
                 remove_item: "Remove"
             },
             es: {
@@ -514,7 +511,6 @@ Managed a team of 3 junior developers.</textarea>
                 start_date_edu: "Fecha de Inicio",
                 end_date_edu: "Fecha de Fin",
                 skill: "Habilidad",
-                level: "Nivel",
                 remove_item: "Eliminar"
             }
         };
@@ -633,8 +629,7 @@ Managed a team of 3 junior developers.</textarea>
 
             document.querySelectorAll('#skills-list .dynamic-list-item').forEach(item => {
                 data.skills.push({
-                    name: item.querySelector('[name="skill_name"]').value,
-                    level: item.querySelector('[name="skill_level"]').value
+                    name: item.querySelector('[name="skill_name"]').value
                 });
             });
 
@@ -704,7 +699,6 @@ Managed a team of 3 junior developers.</textarea>
                     {
                         id: 'skills-list', template: 'skills-template', items: data.skills, fill: (el, d) => {
                             el.querySelector('[name="skill_name"]').value = d.name;
-                            el.querySelector('[name="skill_level"]').value = d.level;
                         }
                     },
                     {
