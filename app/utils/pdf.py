@@ -11,7 +11,7 @@ def render_cv_html(cv_data: dict, template_name: str) -> str:
     
     translations = {
         "en": {
-            "summary": "Professional Summary",
+            "summary": "About me",
             "experience": "Experience",
             "education": "Education",
             "skills": "Skills",
@@ -25,7 +25,7 @@ def render_cv_html(cv_data: dict, template_name: str) -> str:
             "at": "at"
         },
         "es": {
-            "summary": "Resumen Profesional",
+            "summary": "Sobre mí",
             "experience": "Experiencia",
             "education": "Educación",
             "skills": "Habilidades",
