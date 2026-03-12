@@ -21,7 +21,7 @@ async def index(request: Request):
 @app.post("/generate")
 async def generate(cv_data: CVData):
     try:
-        pdf_bytes = generate_pdf(cv_data.model_dump(), cv_data.template_name)
+        pdf_bytes, _ = generate_pdf(cv_data.model_dump(), cv_data.template_name)
     except jinja2.exceptions.TemplateNotFound:
         raise HTTPException(status_code=400, detail=f"Template {cv_data.template_name} not found")
     except Exception as e:
@@ -36,13 +36,17 @@ async def generate(cv_data: CVData):
 @app.post("/preview")
 async def preview(cv_data: CVData):
     try:
-        html_content = render_cv_html(cv_data.model_dump(), cv_data.template_name)
+        pdf_bytes, page_count = generate_pdf(cv_data.model_dump(), cv_data.template_name)
     except jinja2.exceptions.TemplateNotFound:
         raise HTTPException(status_code=400, detail=f"Template {cv_data.template_name} not found")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-    return Response(content=html_content, media_type="text/html")
+    return Response(
+        content=pdf_bytes, 
+        media_type="application/pdf",
+        headers={"X-Page-Count": str(page_count)}
+    )
 
 if __name__ == "__main__":
     import uvicorn

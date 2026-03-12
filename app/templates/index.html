@@ -148,23 +148,27 @@
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 24px;
-            box-sizing: border-box;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            background: #525659;
+            position: relative;
         }
 
-        #preview-scaler {
-            transform-origin: top center;
-            flex-shrink: 0;
+        #preview-container {
+            width: 100%;
+            position: relative;
+            flex: 1;
         }
 
-        #preview-iframe {
-            display: block;
+        .preview-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
             border: none;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.25);
-            overflow: hidden;
+            transition: opacity 0.15s ease-in-out;
+            background: #525659;
         }
     </style>
 </head>
@@ -336,8 +340,8 @@
                 <span id="preview-loading">Updating…</span>
             </div>
             <div id="preview-scroll">
-                <div id="preview-scaler">
-                    <iframe id="preview-iframe" title="CV Preview" scrolling="no"></iframe>
+                <div id="preview-container">
+                    <iframe id="preview-iframe" class="preview-frame" title="CV Preview"></iframe>
                 </div>
             </div>
         </div>
@@ -856,6 +860,11 @@ Managed a team of 3 junior developers.</textarea>
 
         async function refreshPreview() {
             const loadingEl = document.getElementById('preview-loading');
+            const scrollEl = document.getElementById('preview-scroll');
+            const container = document.getElementById('preview-container');
+            const oldIframe = document.getElementById('preview-iframe');
+            
+            const currentScroll = scrollEl.scrollTop;
             loadingEl.style.display = 'inline';
 
             const data = collectData();
@@ -867,8 +876,35 @@ Managed a team of 3 junior developers.</textarea>
                 });
 
                 if (response.ok) {
-                    const html = await response.text();
-                    setPreviewContent(html);
+                    const pageCount = parseInt(response.headers.get('X-Page-Count') || '1');
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const viewerUrl = url + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH';
+                    
+                    const newIframe = document.createElement('iframe');
+                    newIframe.className = 'preview-frame';
+                    newIframe.style.opacity = '0';
+                    newIframe.style.height = (pageCount * 1123) + 'px';
+                    newIframe.src = viewerUrl;
+                    
+                    container.appendChild(newIframe);
+
+                    newIframe.onload = () => {
+                        setTimeout(() => {
+                            newIframe.id = 'preview-iframe';
+                            newIframe.style.opacity = '1';
+                            
+                            if (oldIframe) {
+                                if (oldIframe.src && oldIframe.src.startsWith('blob:')) {
+                                    URL.revokeObjectURL(oldIframe.src.split('#')[0]);
+                                }
+                                oldIframe.remove();
+                            }
+                            
+                            container.style.height = newIframe.style.height;
+                            scrollEl.scrollTop = currentScroll;
+                        }, 100); // Small buffer for PDF plugin initialization
+                    };
                 }
             } catch (err) {
                 console.warn('Preview refresh failed', err);
@@ -877,192 +913,9 @@ Managed a team of 3 junior developers.</textarea>
             }
         }
 
-        // A4 dimensions at 96 dpi: 210mm × 297mm
-        const A4_W_PX = 794;   // ~210mm
-        const A4_H_PX = 1123;  // ~297mm
-
-        const PAGE_GAP = 162; // 1.5cm + 48px + 1.5cm
-
-        function buildPagedHTML(rawHtml) {
-            // The gutters are thick opaque grey bands with drop-shadows on their
-            // top/bottom edges to simulate real paper sheets viewed in a PDF reader.
-            const injectedCSS = `
-                <style id="__preview_inject__">
-                    html {
-                        background: transparent !important;
-                        padding: 0 !important;
-                        overflow: hidden !important;
-                    }
-                    body {
-                        width: ${A4_W_PX}px !important;
-                        margin: 0 !important;
-                        box-sizing: border-box !important;
-                        box-shadow: none !important;
-                        position: relative;
-                        overflow: hidden !important;
-                    }
-                    .page-gutter {
-                        position: absolute;
-                        left: 0;
-                        width: 100%;
-                        height: 48px;
-                        background: #b0b8c1;
-                        pointer-events: none;
-                        z-index: 9999;
-                        box-shadow:
-                            0  4px  8px -2px rgba(0,0,0,0.2) inset,
-                            0 -4px  8px -2px rgba(0,0,0,0.2) inset;
-                        box-sizing: content-box;
-                        border-top: 1.5cm solid white;
-                        border-bottom: 1.5cm solid white;
-                        margin-top: -1.5cm;
-                    }
-                    .page-gutter::after {
-                        content: 'Page ' attr(data-next-page);
-                        position: absolute;
-                        left: 8px;
-                        bottom: -20px;
-                        font-size: 9px;
-                        font-family: sans-serif;
-                        font-weight: 700;
-                        letter-spacing: 0.04em;
-                        color: #6c757d;
-                        background: transparent;
-                        text-transform: uppercase;
-                    }
-                </style>`;
-
-            // After load:
-            //  1. Compute how many A4 pages the content spans.
-            //  2. For each page boundary, shift all content below it down by PAGE_GAP
-            //     by adding margin-top to the first block on the next page.
-            //  3. Report the final total height to the parent so it can size the iframe.
-            const injectedScript = `
-                <script>
-                    window.addEventListener('load', function() {
-                        const body = document.body;
-                        const pageH   = ${A4_H_PX};  
-                        const marginB = 57;    
-                        const gutterH = 48;    
-                        const gapH    = ${PAGE_GAP}; 
-
-                        const selector = '.header, .section > *, .item, h1, h2, h3, p, ul, ol, li, .contact-item, .skill-list, .sidebar-content > *, .main > *';
-                        
-                        let currentPageTop = 0;
-                        for (let p = 1; p < 20; p++) {
-                            const boundary = currentPageTop + pageH - marginB;
-                            const gutterTop = boundary + marginB;
-                            const nextPageContentTop = gutterTop + gutterH + marginB;
-
-                            let iters = 0;
-                            while (iters < 100) {
-                                iters++;
-                                const all = Array.from(document.querySelectorAll(selector));
-                                const blocks = all.filter(b => {
-                                    let parent = b.parentElement;
-                                    while (parent) {
-                                        if (all.includes(parent)) return false;
-                                        parent = parent.parentElement;
-                                    }
-                                    return true;
-                                });
-
-                                blocks.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-                                
-                                let target = null;
-                                for (let b of blocks) {
-                                    const rect = b.getBoundingClientRect();
-                                    
-                                    const crosses = (rect.bottom > boundary + 0.5 && rect.top < nextPageContentTop - 0.5);
-                                    
-                                    let nextCrosses = false;
-                                    const isHeader = b.classList.contains('section-title') || b.tagName === 'H2';
-                                    if (isHeader && rect.top < boundary && b.nextElementSibling) {
-                                        const nextRect = b.nextElementSibling.getBoundingClientRect();
-                                        if (nextRect.bottom > boundary + 0.5) {
-                                            nextCrosses = true;
-                                        }
-                                    }
-
-                                    if (crosses || nextCrosses) {
-                                        target = b;
-                                        break;
-                                    }
-                                }
-
-                                if (!target) break;
-
-                                const curMargin = parseFloat(window.getComputedStyle(target).marginTop) || 0;
-                                const push = nextPageContentTop - target.getBoundingClientRect().top;
-                                if (push > 0) {
-                                    target.style.marginTop = (curMargin + push) + 'px';
-                                } else {
-                                    // Stop to avoid infinite loop if push calculation fails
-                                    break;
-                                }
-                            }
-                            
-                            if (gutterTop > body.scrollHeight) break;
-                            currentPageTop = gutterTop + gutterH;
-                        }
-
-                        currentPageTop = 0;
-                        for (let i = 1; i < 20; i++) {
-                            const gutterTop = currentPageTop + pageH;
-                            // Only add a gutter if there is substantial content remaining 
-                            // (at least more than the gutter height itself)
-                            if (gutterTop > body.scrollHeight - (gutterH + 20)) break;
-                            
-                            const gutter = document.createElement('div');
-                            gutter.className = 'page-gutter';
-                            gutter.setAttribute('data-next-page', i + 1);
-                            gutter.style.top = gutterTop + 'px';
-                            body.appendChild(gutter);
-                            
-                            currentPageTop = gutterTop + gutterH;
-                        }
-
-                        window.parent.postMessage({ type: 'previewHeight', height: body.scrollHeight }, '*');
-                    });
-                <\/script>`;
-
-            return rawHtml
-                .replace('</head>', injectedCSS + '</head>')
-                .replace('</body>', injectedScript + '</body>');
-        }
-
-        function setPreviewContent(rawHtml) {
-            const iframe = document.getElementById('preview-iframe');
-            const scaler = document.getElementById('preview-scaler');
-            const scroll = document.getElementById('preview-scroll');
-
-            iframe.style.width  = A4_W_PX + 'px';
-            iframe.style.height = A4_H_PX + 'px'; 
-
-            const availW = scroll.clientWidth - 60; 
-            const scale  = Math.min(1, availW / A4_W_PX);
-            
-            scaler.style.width     = A4_W_PX + 'px';
-            scaler.style.transform = `scale(${scale})`;
-            scaler.dataset.scale   = scale;
-
-            iframe.srcdoc = buildPagedHTML(rawHtml);
-        }
-
-        window.addEventListener('message', function(e) {
-            if (!e.data || e.data.type !== 'previewHeight') return;
-            const iframe = document.getElementById('preview-iframe');
-            const scaler = document.getElementById('preview-scaler');
-            const totalH = e.data.height;
-            const scale  = parseFloat(scaler.dataset.scale || 1);
-
-            iframe.style.height = totalH + 'px';
-            scaler.style.height = Math.ceil(totalH * scale) + 'px';
-        });
-
         function schedulePreviewRefresh() {
             clearTimeout(previewDebounceTimer);
-            previewDebounceTimer = setTimeout(refreshPreview, 600);
+            previewDebounceTimer = setTimeout(refreshPreview, 1000);
         }
 
         if (!loadData()) {

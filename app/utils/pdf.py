@@ -9,7 +9,6 @@ def render_cv_html(cv_data: dict, template_name: str) -> str:
     template_file = f"{template_name}.html"
     template = env.get_template(template_file)
     
-    # Simple localization
     translations = {
         "en": {
             "summary": "Professional Summary",
@@ -44,9 +43,9 @@ def render_cv_html(cv_data: dict, template_name: str) -> str:
     t = translations.get(lang, translations["en"])
     
     return template.render(data=cv_data, t=t)
-
-def generate_pdf(cv_data: dict, template_name: str) -> bytes:
+def generate_pdf(cv_data: dict, template_name: str) -> tuple[bytes, int]:
     html_out = render_cv_html(cv_data, template_name)
-    
-    pdf_bytes = HTML(string=html_out, base_url=TEMPLATES_DIR).write_pdf()
-    return pdf_bytes
+
+    document = HTML(string=html_out, base_url=TEMPLATES_DIR).render()
+    pdf_bytes = document.write_pdf()
+    return pdf_bytes, len(document.pages)
