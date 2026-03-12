@@ -48,6 +48,5 @@ def render_cv_html(cv_data: dict, template_name: str) -> str:
 def generate_pdf(cv_data: dict, template_name: str) -> bytes:
     html_out = render_cv_html(cv_data, template_name)
     
-    # Generate PDF
     pdf_bytes = HTML(string=html_out, base_url=TEMPLATES_DIR).write_pdf()
     return pdf_bytes

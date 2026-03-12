@@ -12,7 +12,6 @@
             margin: 0;
         }
 
-        /* ── Two-column shell ─────────────────────────────── */
         #app-shell {
             display: flex;
             height: 100vh;
@@ -27,7 +26,6 @@
             }
         }
 
-        /* ── Left: scrollable form panel ──────────────────── */
         #form-panel {
             flex: 0 0 50%;
             max-width: 50%;
@@ -103,7 +101,6 @@
             box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
         }
 
-        /* ── Right: sticky preview panel ───────────────────── */
         #preview-panel {
             flex: 0 0 50%;
             max-width: 50%;
@@ -147,7 +144,6 @@
             display: none;
         }
 
-        /* Scrollable viewport for the scaled iframe */
         #preview-scroll {
             flex: 1;
             overflow-y: auto;
@@ -159,11 +155,9 @@
             align-items: center;
         }
 
-        /* Wrapper that holds the iframe at its natural size and is scaled down */
         #preview-scaler {
             transform-origin: top center;
             flex-shrink: 0;
-            /* width/transform/height set dynamically by JS */
         }
 
         #preview-iframe {
@@ -178,7 +172,6 @@
 <body>
     <div id="app-shell">
 
-        <!-- ════════ Left: Form ════════ -->
         <div id="form-panel">
             <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-3">
                 <h1 class="mb-0">MakeMyCV</h1>
@@ -202,7 +195,6 @@
             </div>
 
             <form id="cvForm" novalidate>
-                <!-- Personal Info -->
                 <div class="form-section">
                     <h3 data-translate="personal_info_header">Personal Information</h3>
                     <div class="row g-3">
@@ -249,7 +241,6 @@
                     </div>
                 </div>
 
-                <!-- Skills -->
                 <div class="form-section">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 data-translate="skills_header">Skills</h3>
@@ -260,7 +251,6 @@
                     <div id="skills-list" class="row g-2"></div>
                 </div>
 
-                <!-- Experience -->
                 <div class="form-section">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 data-translate="experience_header">Experience</h3>
@@ -271,7 +261,6 @@
                     <div id="experience-list"></div>
                 </div>
 
-                <!-- Education -->
                 <div class="form-section">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 data-translate="education_header">Education</h3>
@@ -282,8 +271,6 @@
                     <div id="education-list"></div>
                 </div>
 
-
-                <!-- Languages -->
                 <div class="form-section">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 data-translate="languages_header">Languages</h3>
@@ -294,7 +281,6 @@
                     <div id="languages-list" class="row g-2"></div>
                 </div>
 
-                <!-- Template Selection -->
                 <div class="form-section">
                     <h3 data-translate="choose_template" class="mb-4">Choose Template</h3>
                     <div class="row g-3">
@@ -343,9 +329,7 @@
                 </div>
             </form>
         </div>
-        <!-- end #form-panel -->
 
-        <!-- ════════ Right: Live Preview ════════ -->
         <div id="preview-panel">
             <div id="preview-panel-header">
                 <h6>Live Preview</h6>
@@ -358,9 +342,8 @@
             </div>
         </div>
 
-    </div><!-- end #app-shell -->
+    </div>
 
-    <!-- Templates for JS -->
     <template id="experience-template">
         <div class="dynamic-item">
             <div class="d-flex justify-content-between mb-2">
@@ -453,7 +436,6 @@ Managed a team of 3 junior developers.</textarea>
         </div>
     </template>
 
-    <!-- Reset Confirmation Modal -->
     <div class="modal fade" id="resetModal" tabindex="-1" aria-labelledby="resetModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -472,7 +454,6 @@ Managed a team of 3 junior developers.</textarea>
         </div>
     </div>
 
-    <!-- Load Confirmation Modal -->
     <div class="modal fade" id="loadModal" tabindex="-1" aria-labelledby="loadModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -661,10 +642,9 @@ Managed a team of 3 junior developers.</textarea>
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 
-                // Validate if it is an image
                 if (!file.type.startsWith('image/')) {
                     alert(translations[lang].invalid_image);
-                    input.value = ''; // Clear the input
+                    input.value = ''; 
                     preview.style.display = 'none';
                     saveData();
                     return;
@@ -866,13 +846,12 @@ Managed a team of 3 junior developers.</textarea>
                         console.error("Error importing JSON", err);
                         alert("Error reading file.");
                     }
-                    input.value = ''; // reset input
+                    input.value = ''; 
                 };
                 reader.readAsText(input.files[0]);
             }
         }
 
-        // ── Live Preview ─────────────────────────────────────────
         let previewDebounceTimer = null;
 
         async function refreshPreview() {
@@ -898,7 +877,6 @@ Managed a team of 3 junior developers.</textarea>
             }
         }
 
-        // ── PDF-like paginated preview ────────────────────────────
         // A4 dimensions at 96 dpi: 210mm × 297mm
         const A4_W_PX = 794;   // ~210mm
         const A4_H_PX = 1123;  // ~297mm
@@ -906,7 +884,6 @@ Managed a team of 3 junior developers.</textarea>
         const PAGE_GAP = 162; // 1.5cm + 48px + 1.5cm
 
         function buildPagedHTML(rawHtml) {
-            // Inject CSS that forces A4 width and styles the page-gutter divs.
             // The gutters are thick opaque grey bands with drop-shadows on their
             // top/bottom edges to simulate real paper sheets viewed in a PDF reader.
             const injectedCSS = `
@@ -922,9 +899,7 @@ Managed a team of 3 junior developers.</textarea>
                         box-shadow: none !important;
                         position: relative;
                         overflow: hidden !important;
-                        /* min-height set by script after gutter calculation */
                     }
-                    /* Grey gutter band between pages */
                     .page-gutter {
                         position: absolute;
                         left: 0;
@@ -941,7 +916,6 @@ Managed a team of 3 junior developers.</textarea>
                         border-bottom: 1.5cm solid white;
                         margin-top: -1.5cm;
                     }
-                    /* "Page N" label on the top edge of each new page */
                     .page-gutter::after {
                         content: 'Page ' attr(data-next-page);
                         position: absolute;
@@ -966,12 +940,11 @@ Managed a team of 3 junior developers.</textarea>
                 <script>
                     window.addEventListener('load', function() {
                         const body = document.body;
-                        const pageH   = ${A4_H_PX};  // 1123px (A4 at 96dpi)
-                        const marginB = 57;    // 1.5cm
-                        const gutterH = 48;    // Grey band height
-                        const gapH    = ${PAGE_GAP}; // 162px (marginB + gutterH + marginB)
+                        const pageH   = ${A4_H_PX};  
+                        const marginB = 57;    
+                        const gutterH = 48;    
+                        const gapH    = ${PAGE_GAP}; 
 
-                        // Selector for potential atomic blocks across all templates
                         const selector = '.header, .section > *, .item, h1, h2, h3, p, ul, ol, li, .contact-item, .skill-list, .sidebar-content > *, .main > *';
                         
                         let currentPageTop = 0;
@@ -980,7 +953,6 @@ Managed a team of 3 junior developers.</textarea>
                             const gutterTop = boundary + marginB;
                             const nextPageContentTop = gutterTop + gutterH + marginB;
 
-                            // Iteratively push elements for the CURRENT page boundary until none cross it
                             let iters = 0;
                             while (iters < 100) {
                                 iters++;
@@ -994,18 +966,14 @@ Managed a team of 3 junior developers.</textarea>
                                     return true;
                                 });
 
-                                // Find the FIRST element that crosses the boundary
                                 blocks.sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
                                 
                                 let target = null;
                                 for (let b of blocks) {
                                     const rect = b.getBoundingClientRect();
                                     
-                                    // 1. Check if the element itself crosses the boundary
                                     const crosses = (rect.bottom > boundary + 0.5 && rect.top < nextPageContentTop - 0.5);
                                     
-                                    // 2. "Keep with next" logic for headers:
-                                    // If header is on current page but its next sibling is crossing or already on next page
                                     let nextCrosses = false;
                                     const isHeader = b.classList.contains('section-title') || b.tagName === 'H2';
                                     if (isHeader && rect.top < boundary && b.nextElementSibling) {
@@ -1028,8 +996,7 @@ Managed a team of 3 junior developers.</textarea>
                                 if (push > 0) {
                                     target.style.marginTop = (curMargin + push) + 'px';
                                 } else {
-                                    // Safety: if we find a target but push is 0 or negative, 
-                                    // it means something is wrong with our logic; stop to avoid infinite loop.
+                                    // Stop to avoid infinite loop if push calculation fails
                                     break;
                                 }
                             }
@@ -1038,7 +1005,6 @@ Managed a team of 3 junior developers.</textarea>
                             currentPageTop = gutterTop + gutterH;
                         }
 
-                        // Final pass: place visual gutters
                         currentPageTop = 0;
                         for (let i = 1; i < 20; i++) {
                             const gutterTop = currentPageTop + pageH;
@@ -1070,7 +1036,7 @@ Managed a team of 3 junior developers.</textarea>
             iframe.style.width  = A4_W_PX + 'px';
             iframe.style.height = A4_H_PX + 'px'; 
 
-            const availW = scroll.clientWidth - 60; // Extra buffer for scrollbar
+            const availW = scroll.clientWidth - 60; 
             const scale  = Math.min(1, availW / A4_W_PX);
             
             scaler.style.width     = A4_W_PX + 'px';
@@ -1080,8 +1046,6 @@ Managed a team of 3 junior developers.</textarea>
             iframe.srcdoc = buildPagedHTML(rawHtml);
         }
 
-        // Resize the iframe and its scaler wrapper once the iframe content
-        // reports its full height (including gutters).
         window.addEventListener('message', function(e) {
             if (!e.data || e.data.type !== 'previewHeight') return;
             const iframe = document.getElementById('preview-iframe');
@@ -1098,7 +1062,6 @@ Managed a team of 3 junior developers.</textarea>
             previewDebounceTimer = setTimeout(refreshPreview, 600);
         }
 
-        // ── Initialization ───────────────────────────────────────
         if (!loadData()) {
             addItem('experience-list', 'experience-template');
             addItem('education-list', 'education-template');
@@ -1107,7 +1070,6 @@ Managed a team of 3 junior developers.</textarea>
             switchLanguage();
         }
 
-        // Event listeners for persistence + live preview
         document.getElementById('cvForm').addEventListener('input', () => {
             saveData();
             schedulePreviewRefresh();
@@ -1116,7 +1078,6 @@ Managed a team of 3 junior developers.</textarea>
             saveData();
             schedulePreviewRefresh();
         });
-        // Also trigger when template radio buttons change
         document.querySelectorAll('input[name="template_name"]').forEach(radio => {
             radio.addEventListener('change', () => {
                 saveData();
@@ -1124,10 +1085,8 @@ Managed a team of 3 junior developers.</textarea>
             });
         });
 
-        // Initial preview render
         refreshPreview();
 
-        // ── PDF Generation ───────────────────────────────────────
         document.getElementById('cvForm').onsubmit = async (e) => {
             e.preventDefault();
             const form = e.target;

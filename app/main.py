@@ -8,7 +8,6 @@ import jinja2
 
 app = FastAPI()
 
-# Get the path for templates and static files
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 if not os.path.exists(os.path.join(BASE_DIR, "static")):
