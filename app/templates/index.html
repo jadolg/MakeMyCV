@@ -1,587 +1,775 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MakeMyCV - Build Your Resume</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f4f7f6; }
-        .form-section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .dynamic-item { border-left: 3px solid #007bff; padding: 15px; padding-left: 20px; margin-bottom: 20px; background: #f8f9fa; border-radius: 4px; position: relative; }
-        .template-card { cursor: pointer; display: block; height: 100%; }
-        .template-card input { display: none; }
-        .template-card .card { border: 2px solid transparent; transition: all 0.2s; overflow: hidden; }
-        .template-card input:checked + .card { border-color: #007bff; background-color: #f0f7ff; }
-        .template-card .card:hover { transform: translateY(-5px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .template-card img { background: #eee; border-bottom: 1px solid #eee; }
+        body {
+            background-color: #f4f7f6;
+            margin: 0;
+        }
+
+        /* ── Two-column shell ─────────────────────────────── */
+        #app-shell {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── Left: scrollable form panel ──────────────────── */
+        #form-panel {
+            flex: 0 0 50%;
+            max-width: 50%;
+            overflow-y: auto;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .form-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .dynamic-item {
+            border-left: 3px solid #007bff;
+            padding: 15px;
+            padding-left: 20px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .template-card {
+            cursor: pointer;
+            display: block;
+            height: 100%;
+        }
+
+        .template-card input {
+            display: none;
+        }
+
+        .template-card .card {
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .template-card input:checked+.card {
+            border-color: #007bff;
+            background-color: #f0f7ff;
+        }
+
+        .template-card .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .template-card img {
+            background: #eee;
+            border-bottom: 1px solid #eee;
+        }
+
         .was-validated .form-control:invalid {
             border-color: #dc3545;
             background-color: #fff8f8;
         }
+
         .was-validated .form-control:invalid:focus {
             box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
         }
+
+        /* ── Right: sticky preview panel ───────────────────── */
+        #preview-panel {
+            flex: 0 0 50%;
+            max-width: 50%;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #e9ecef;
+            border-left: 1px solid #dee2e6;
+        }
+
+        #preview-panel-header {
+            padding: 10px 16px;
+            background: #fff;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        #preview-panel-header h6 {
+            margin: 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        #preview-loading {
+            font-size: 0.8rem;
+            color: #6c757d;
+            display: none;
+        }
+
+        #preview-iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: white;
+        }
+
+        /* A4 scale hint */
+        #preview-scale-hint {
+            font-size: 0.75rem;
+            color: #adb5bd;
+            padding: 4px 16px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            flex-shrink: 0;
+        }
     </style>
 </head>
+
 <body>
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="mb-0">MakeMyCV</h1>
-        <div style="width: 150px;">
-            <select id="languageSelector" class="form-select" onchange="switchLanguage()">
-                <option value="en" selected>English</option>
-                <option value="es">Español</option>
-            </select>
-        </div>
-    </div>
-    <form id="cvForm" novalidate>
-        <!-- Personal Info -->
-        <div class="form-section">
-            <h3 data-translate="personal_info_header">Personal Information</h3>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label" data-translate="full_name">Full Name</label>
-                    <input type="text" class="form-control" name="full_name" value="John Doe" required>
+    <div id="app-shell">
+
+        <!-- ════════ Left: Form ════════ -->
+        <div id="form-panel">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">MakeMyCV</h1>
+                <div style="width: 150px;">
+                    <select id="languageSelector" class="form-select" onchange="switchLanguage()">
+                        <option value="en" selected>English</option>
+                        <option value="es">Español</option>
+                    </select>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label" data-translate="email">Email</label>
-                    <input type="email" class="form-control" name="email" value="john.doe@example.com" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label" data-translate="phone">Phone (Optional)</label>
-                    <input type="text" class="form-control" name="phone" value="+1 234 567 890">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label" data-translate="location">Location</label>
-                    <input type="text" class="form-control" name="location" placeholder="City, Country" data-translate-placeholder="location_placeholder" value="New York, USA" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label" data-translate="website">Website (Optional)</label>
-                    <input type="url" class="form-control" name="website" value="https://johndoe.dev">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label" data-translate="linkedin">LinkedIn (Optional)</label>
-                    <input type="url" class="form-control" name="linkedin" value="https://linkedin.com/in/johndoe">
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label" data-translate="profile_picture">Profile Picture (Optional)</label>
-                    <input type="file" class="form-control" id="profile_picture" accept="image/*" onchange="previewImage(this)">
-                    <div id="image-preview" class="mt-2" style="display: none;">
-                        <img src="" id="preview-img" style="max-height: 100px; border-radius: 4px;">
+            </div>
+
+            <form id="cvForm" novalidate>
+                <!-- Personal Info -->
+                <div class="form-section">
+                    <h3 data-translate="personal_info_header">Personal Information</h3>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" data-translate="full_name">Full Name</label>
+                            <input type="text" class="form-control" name="full_name" value="John Doe" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" data-translate="email">Email</label>
+                            <input type="email" class="form-control" name="email" value="john.doe@example.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" data-translate="phone">Phone (Optional)</label>
+                            <input type="text" class="form-control" name="phone" value="+1 234 567 890">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" data-translate="location">Location</label>
+                            <input type="text" class="form-control" name="location" placeholder="City, Country"
+                                data-translate-placeholder="location_placeholder" value="New York, USA" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" data-translate="website">Website (Optional)</label>
+                            <input type="url" class="form-control" name="website" value="https://johndoe.dev">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" data-translate="linkedin">LinkedIn (Optional)</label>
+                            <input type="url" class="form-control" name="linkedin"
+                                value="https://linkedin.com/in/johndoe">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" data-translate="profile_picture">Profile Picture
+                                (Optional)</label>
+                            <input type="file" class="form-control" id="profile_picture" accept="image/*"
+                                onchange="previewImage(this)">
+                            <div id="image-preview" class="mt-2" style="display: none;">
+                                <img src="" id="preview-img" style="max-height: 100px; border-radius: 4px;">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" data-translate="summary">Professional Summary</label>
+                            <textarea class="form-control" name="summary" rows="3"
+                                required>Senior Software Engineer with 5+ years of experience in full-stack development. Specialist in Python, FastAPI, and cloud-native solutions.</textarea>
+                        </div>
                     </div>
                 </div>
-                <div class="col-12">
-                    <label class="form-label" data-translate="summary">Professional Summary</label>
-                    <textarea class="form-control" name="summary" rows="3" required>Senior Software Engineer with 5+ years of experience in full-stack development. Specialist in Python, FastAPI, and cloud-native solutions.</textarea>
+
+                <!-- Experience -->
+                <div class="form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 data-translate="experience_header">Experience</h3>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                            onclick="addItem('experience-list', 'experience-template'); saveData()"
+                            data-translate="add_experience">+ Add Experience</button>
+                    </div>
+                    <div id="experience-list"></div>
                 </div>
+
+                <!-- Education -->
+                <div class="form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 data-translate="education_header">Education</h3>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                            onclick="addItem('education-list', 'education-template'); saveData()"
+                            data-translate="add_education">+ Add Education</button>
+                    </div>
+                    <div id="education-list"></div>
+                </div>
+
+                <!-- Skills -->
+                <div class="form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 data-translate="skills_header">Skills</h3>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                            onclick="addItem('skills-list', 'skills-template'); saveData()" data-translate="add_skill">+
+                            Add Skill</button>
+                    </div>
+                    <div id="skills-list" class="row g-2"></div>
+                </div>
+
+                <!-- Languages -->
+                <div class="form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 data-translate="languages_header">Languages</h3>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                            onclick="addItem('languages-list', 'languages-template'); saveData()"
+                            data-translate="add_language">+ Add Language</button>
+                    </div>
+                    <div id="languages-list" class="row g-2"></div>
+                </div>
+
+                <!-- Template Selection -->
+                <div class="form-section">
+                    <h3 data-translate="choose_template" class="mb-4">Choose Template</h3>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="template-card" for="t1">
+                                <input type="radio" name="template_name" value="template1" id="t1" checked
+                                    onchange="saveData()">
+                                <div class="card h-100">
+                                    <img src="/static/template1.svg" class="card-img-top" alt="Template 1">
+                                    <div class="card-body text-center p-2">
+                                        <h6 class="card-title mb-0" data-translate="template_modern">Modern</h6>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="template-card" for="t2">
+                                <input type="radio" name="template_name" value="template2" id="t2"
+                                    onchange="saveData()">
+                                <div class="card h-100">
+                                    <img src="/static/template2.svg" class="card-img-top" alt="Template 2">
+                                    <div class="card-body text-center p-2">
+                                        <h6 class="card-title mb-0" data-translate="template_classic">Classic</h6>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="template-card" for="t3">
+                                <input type="radio" name="template_name" value="template3" id="t3"
+                                    onchange="saveData()">
+                                <div class="card h-100">
+                                    <img src="/static/template3.svg" class="card-img-top" alt="Template 3">
+                                    <div class="card-body text-center p-2">
+                                        <h6 class="card-title mb-0" data-translate="template_minimalist">Minimalist</h6>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4 d-flex justify-content-center gap-3 pb-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5" data-translate="generate_btn">Generate CV
+                        (PDF)</button>
+                </div>
+            </form>
+        </div>
+        <!-- end #form-panel -->
+
+        <!-- ════════ Right: Live Preview ════════ -->
+        <div id="preview-panel">
+            <div id="preview-panel-header">
+                <h6>Live Preview</h6>
+                <span id="preview-loading">Updating…</span>
             </div>
+            <iframe id="preview-iframe" title="CV Preview"></iframe>
+            <div id="preview-scale-hint">Preview may differ slightly from the exported PDF due to page scaling.</div>
         </div>
 
-        <!-- Experience -->
-        <div class="form-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 data-translate="experience_header">Experience</h3>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem('experience-list', 'experience-template'); saveData()" data-translate="add_experience">+ Add Experience</button>
-            </div>
-            <div id="experience-list"></div>
-        </div>
+    </div><!-- end #app-shell -->
 
-        <!-- Education -->
-        <div class="form-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 data-translate="education_header">Education</h3>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem('education-list', 'education-template'); saveData()" data-translate="add_education">+ Add Education</button>
+    <!-- Templates for JS -->
+    <template id="experience-template">
+        <div class="dynamic-item">
+            <div class="text-end mb-2">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)"
+                    data-translate="remove_item">Remove</button>
             </div>
-            <div id="education-list"></div>
-        </div>
-
-        <!-- Skills -->
-        <div class="form-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 data-translate="skills_header">Skills</h3>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem('skills-list', 'skills-template'); saveData()" data-translate="add_skill">+ Add Skill</button>
-            </div>
-            <div id="skills-list" class="row g-2"></div>
-        </div>
-
-        <!-- Languages -->
-        <div class="form-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 data-translate="languages_header">Languages</h3>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem('languages-list', 'languages-template'); saveData()" data-translate="add_language">+ Add Language</button>
-            </div>
-            <div id="languages-list" class="row g-2"></div>
-        </div>
-
-        <!-- Template Selection -->
-        <div class="form-section">
-            <h3 data-translate="choose_template" class="mb-4">Choose Template</h3>
             <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="template-card" for="t1">
-                        <input type="radio" name="template_name" value="template1" id="t1" checked onchange="saveData()">
-                        <div class="card h-100">
-                            <img src="/static/template1.svg" class="card-img-top" alt="Template 1">
-                            <div class="card-body text-center p-2">
-                                <h6 class="card-title mb-0" data-translate="template_modern">Modern</h6>
-                            </div>
-                        </div>
-                    </label>
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="Company" name="company"
+                        data-translate-placeholder="company" value="Tech Solutions Inc." required>
                 </div>
-                <div class="col-md-4">
-                    <label class="template-card" for="t2">
-                        <input type="radio" name="template_name" value="template2" id="t2" onchange="saveData()">
-                        <div class="card h-100">
-                            <img src="/static/template2.svg" class="card-img-top" alt="Template 2">
-                            <div class="card-body text-center p-2">
-                                <h6 class="card-title mb-0" data-translate="template_classic">Classic</h6>
-                            </div>
-                        </div>
-                    </label>
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="Position" name="position"
+                        data-translate-placeholder="position" value="Senior Developer" required>
                 </div>
-                <div class="col-md-4">
-                    <label class="template-card" for="t3">
-                        <input type="radio" name="template_name" value="template3" id="t3" onchange="saveData()">
-                        <div class="card h-100">
-                            <img src="/static/template3.svg" class="card-img-top" alt="Template 3">
-                            <div class="card-body text-center p-2">
-                                <h6 class="card-title mb-0" data-translate="template_minimalist">Minimalist</h6>
-                            </div>
-                        </div>
-                    </label>
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="Start Date (e.g. Jan 2020)" name="start_date"
+                        data-translate-placeholder="start_date" value="Jan 2020" required>
                 </div>
-            </div>
-        </div>
-
-        <div class="text-center mt-4 d-flex justify-content-center gap-3">
-            <button type="button" class="btn btn-outline-secondary btn-lg px-5" data-translate="preview_btn" onclick="previewCV()">Preview CV</button>
-            <button type="submit" class="btn btn-primary btn-lg px-5" data-translate="generate_btn">Generate CV (PDF)</button>
-        </div>
-    </form>
-</div>
-
-<!-- Templates for JS -->
-<template id="experience-template">
-    <div class="dynamic-item">
-        <div class="text-end mb-2">
-            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)" data-translate="remove_item">Remove</button>
-        </div>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <input type="text" class="form-control" placeholder="Company" name="company" data-translate-placeholder="company" value="Tech Solutions Inc." required>
-            </div>
-            <div class="col-md-6">
-                <input type="text" class="form-control" placeholder="Position" name="position" data-translate-placeholder="position" value="Senior Developer" required>
-            </div>
-            <div class="col-md-6">
-                <input type="text" class="form-control" placeholder="Start Date (e.g. Jan 2020)" name="start_date" data-translate-placeholder="start_date" value="Jan 2020" required>
-            </div>
-            <div class="col-md-6">
-                <input type="text" class="form-control" placeholder="End Date (or Present)" name="end_date" data-translate-placeholder="end_date" value="Present" required>
-            </div>
-            <div class="col-12">
-                <textarea class="form-control" placeholder="Key responsibilities (one per line)" name="description" data-translate-placeholder="responsibilities" rows="2" required>Led development of core API services using FastAPI.
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="End Date (or Present)" name="end_date"
+                        data-translate-placeholder="end_date" value="Present" required>
+                </div>
+                <div class="col-12">
+                    <textarea class="form-control" placeholder="Key responsibilities (one per line)" name="description"
+                        data-translate-placeholder="responsibilities" rows="2" required>Led development of core API services using FastAPI.
 Optimized database performance by 40%.
 Managed a team of 3 junior developers.</textarea>
+                </div>
             </div>
         </div>
-    </div>
-</template>
+    </template>
 
-<template id="education-template">
-    <div class="dynamic-item">
-        <div class="text-end mb-2">
-            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)" data-translate="remove_item">Remove</button>
-        </div>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <input type="text" class="form-control" placeholder="Institution" name="institution" data-translate-placeholder="institution" value="State University of Tech" required>
+    <template id="education-template">
+        <div class="dynamic-item">
+            <div class="text-end mb-2">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)"
+                    data-translate="remove_item">Remove</button>
             </div>
-            <div class="col-md-6">
-                <input type="text" class="form-control" placeholder="Degree" name="degree" data-translate-placeholder="degree" value="B.Sc. in Computer Science" required>
-            </div>
-            <div class="col-md-6">
-                <input type="text" class="form-control" placeholder="Start Date" name="start_date" data-translate-placeholder="start_date_edu" value="Sep 2015" required>
-            </div>
-            <div class="col-md-6">
-                <input type="text" class="form-control" placeholder="End Date" name="end_date" data-translate-placeholder="end_date_edu" value="Jun 2019" required>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="Institution" name="institution"
+                        data-translate-placeholder="institution" value="State University of Tech" required>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="Degree" name="degree"
+                        data-translate-placeholder="degree" value="B.Sc. in Computer Science" required>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="Start Date" name="start_date"
+                        data-translate-placeholder="start_date_edu" value="Sep 2015" required>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="End Date" name="end_date"
+                        data-translate-placeholder="end_date_edu" value="Jun 2019" required>
+                </div>
             </div>
         </div>
-    </div>
-</template>
+    </template>
 
-<template id="skills-template">
-    <div class="col-md-4">
-        <div class="input-group">
-            <input type="text" class="form-control" placeholder="Skill" name="skill_name" data-translate-placeholder="skill" value="Python" required>
-            <input type="text" class="form-control" placeholder="Level" name="skill_level" data-translate-placeholder="level" value="Expert">
-            <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">×</button>
+    <template id="skills-template">
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Skill" name="skill_name"
+                    data-translate-placeholder="skill" value="Python" required>
+                <input type="text" class="form-control" placeholder="Level" name="skill_level"
+                    data-translate-placeholder="level" value="Expert">
+                <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">×</button>
+            </div>
         </div>
-    </div>
-</template>
+    </template>
 
-<template id="languages-template">
-    <div class="col-md-4 position-relative">
-        <div class="input-group">
-            <input type="text" class="form-control" placeholder="Language (e.g. English)" name="language_name" data-translate-placeholder="language_placeholder_field" value="English" required>
-            <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">×</button>
+    <template id="languages-template">
+        <div class="col-md-4 position-relative">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Language (e.g. English)" name="language_name"
+                    data-translate-placeholder="language_placeholder_field" value="English" required>
+                <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">×</button>
+            </div>
         </div>
-    </div>
-</template>
+    </template>
 
-<script>
-    const translations = {
-        en: {
-            personal_info_header: "Personal Information",
-            full_name: "Full Name",
-            email: "Email",
-            phone: "Phone (Optional)",
-            location: "Location",
-            location_placeholder: "City, Country",
-            website: "Website (Optional)",
-            linkedin: "LinkedIn (Optional)",
-            profile_picture: "Profile Picture (Optional)",
-            summary: "Professional Summary",
-            experience_header: "Experience",
-            add_experience: "+ Add Experience",
-            education_header: "Education",
-            add_education: "+ Add Education",
-            skills_header: "Skills",
-            add_skill: "+ Add Skill",
-            languages_header: "Languages",
-            add_language: "+ Add Language",
-            language_placeholder_field: "Language (e.g. English)",
-            choose_template: "Choose Template",
-            template_modern: "Modern",
-            template_classic: "Classic",
-            template_minimalist: "Minimalist",
-            generate_btn: "Generate CV (PDF)",
-            preview_btn: "Preview CV",
-            company: "Company",
-            position: "Position",
-            start_date: "Start Date (e.g. Jan 2020)",
-            end_date: "End Date (or Present)",
-            responsibilities: "Key responsibilities (one per line)",
-            institution: "Institution",
-            degree: "Degree",
-            start_date_edu: "Start Date",
-            end_date_edu: "End Date",
-            skill: "Skill",
-            level: "Level",
-            remove_item: "Remove"
-        },
-        es: {
-            personal_info_header: "Información Personal",
-            full_name: "Nombre Completo",
-            email: "Correo Electrónico",
-            phone: "Teléfono (Opcional)",
-            location: "Ubicación",
-            location_placeholder: "Ciudad, País",
-            website: "Sitio Web (Opcional)",
-            linkedin: "LinkedIn (Opcional)",
-            profile_picture: "Foto de Perfil (Opcional)",
-            summary: "Resumen Profesional",
-            experience_header: "Experiencia",
-            add_experience: "+ Añadir Experiencia",
-            education_header: "Educación",
-            add_education: "+ Añadir Educación",
-            skills_header: "Habilidades",
-            add_skill: "+ Añadir Habilidad",
-            languages_header: "Idiomas",
-            add_language: "+ Añadir Idioma",
-            language_placeholder_field: "Idioma (ej. Inglés)",
-            choose_template: "Elegir Plantilla",
-            template_modern: "Moderno",
-            template_classic: "Clásico",
-            template_minimalist: "Minimalista",
-            generate_btn: "Generar CV (PDF)",
-            preview_btn: "Vista Previa",
-            company: "Empresa",
-            position: "Cargo",
-            start_date: "Fecha de Inicio (ej. Ene 2020)",
-            end_date: "Fecha de Fin (o Presente)",
-            responsibilities: "Responsabilidades clave (una por línea)",
-            institution: "Institución",
-            degree: "Título",
-            start_date_edu: "Fecha de Inicio",
-            end_date_edu: "Fecha de Fin",
-            skill: "Habilidad",
-            level: "Nivel",
-            remove_item: "Eliminar"
-        }
-    };
-
-    function switchLanguage() {
-        const lang = document.getElementById('languageSelector').value;
-        const t = translations[lang];
-
-        // Update text content
-        document.querySelectorAll('[data-translate]').forEach(el => {
-            const key = el.getAttribute('data-translate');
-            if (t[key]) el.textContent = t[key];
-        });
-
-        // Update placeholders
-        document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
-            const key = el.getAttribute('data-translate-placeholder');
-            if (t[key]) el.placeholder = t[key];
-        });
-    }
-
-    function addItem(containerId, templateId) {
-        const container = document.getElementById(containerId);
-        const template = document.getElementById(templateId);
-        const clone = template.content.cloneNode(true);
-        container.appendChild(clone);
-        switchLanguage(); // Re-apply language to new items
-    }
-
-    function removeItem(btn) {
-        const item = btn.closest('.dynamic-item, .col-md-4, .position-relative');
-        if (item) {
-            item.remove();
-            saveData();
-        }
-    }
-
-    function previewImage(input) {
-        const preview = document.getElementById('image-preview');
-        const previewImg = document.getElementById('preview-img');
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                preview.style.display = 'block';
-                saveData();
-            }
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            preview.style.display = 'none';
-            saveData();
-        }
-    }
-
-    function collectData() {
-        const form = document.getElementById('cvForm');
-        const formData = new FormData(form);
-        const previewImg = document.getElementById('preview-img');
-        const previewVisible = document.getElementById('image-preview').style.display !== 'none';
-        
-        const data = {
-            personal_info: {
-                full_name: formData.get('full_name'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                location: formData.get('location'),
-                website: formData.get('website'),
-                linkedin: formData.get('linkedin'),
-                profile_picture: previewVisible ? previewImg.src : null,
-                summary: formData.get('summary')
+    <script>
+        const translations = {
+            en: {
+                personal_info_header: "Personal Information",
+                full_name: "Full Name",
+                email: "Email",
+                phone: "Phone (Optional)",
+                location: "Location",
+                location_placeholder: "City, Country",
+                website: "Website (Optional)",
+                linkedin: "LinkedIn (Optional)",
+                profile_picture: "Profile Picture (Optional)",
+                summary: "Professional Summary",
+                experience_header: "Experience",
+                add_experience: "+ Add Experience",
+                education_header: "Education",
+                add_education: "+ Add Education",
+                skills_header: "Skills",
+                add_skill: "+ Add Skill",
+                languages_header: "Languages",
+                add_language: "+ Add Language",
+                language_placeholder_field: "Language (e.g. English)",
+                choose_template: "Choose Template",
+                template_modern: "Modern",
+                template_classic: "Classic",
+                template_minimalist: "Minimalist",
+                generate_btn: "Generate CV (PDF)",
+                company: "Company",
+                position: "Position",
+                start_date: "Start Date (e.g. Jan 2020)",
+                end_date: "End Date (or Present)",
+                responsibilities: "Key responsibilities (one per line)",
+                institution: "Institution",
+                degree: "Degree",
+                start_date_edu: "Start Date",
+                end_date_edu: "End Date",
+                skill: "Skill",
+                level: "Level",
+                remove_item: "Remove"
             },
-            experience: [],
-            education: [],
-            skills: [],
-            languages: [],
-            template_name: formData.get('template_name'),
-            language: document.getElementById('languageSelector').value
+            es: {
+                personal_info_header: "Información Personal",
+                full_name: "Nombre Completo",
+                email: "Correo Electrónico",
+                phone: "Teléfono (Opcional)",
+                location: "Ubicación",
+                location_placeholder: "Ciudad, País",
+                website: "Sitio Web (Opcional)",
+                linkedin: "LinkedIn (Opcional)",
+                profile_picture: "Foto de Perfil (Opcional)",
+                summary: "Resumen Profesional",
+                experience_header: "Experiencia",
+                add_experience: "+ Añadir Experiencia",
+                education_header: "Educación",
+                add_education: "+ Añadir Educación",
+                skills_header: "Habilidades",
+                add_skill: "+ Añadir Habilidad",
+                languages_header: "Idiomas",
+                add_language: "+ Añadir Idioma",
+                language_placeholder_field: "Idioma (ej. Inglés)",
+                choose_template: "Elegir Plantilla",
+                template_modern: "Moderno",
+                template_classic: "Clásico",
+                template_minimalist: "Minimalista",
+                generate_btn: "Generar CV (PDF)",
+                company: "Empresa",
+                position: "Cargo",
+                start_date: "Fecha de Inicio (ej. Ene 2020)",
+                end_date: "Fecha de Fin (o Presente)",
+                responsibilities: "Responsabilidades clave (una por línea)",
+                institution: "Institución",
+                degree: "Título",
+                start_date_edu: "Fecha de Inicio",
+                end_date_edu: "Fecha de Fin",
+                skill: "Habilidad",
+                level: "Nivel",
+                remove_item: "Eliminar"
+            }
         };
 
-        // Collect experiences
-        document.querySelectorAll('#experience-list .dynamic-item').forEach(item => {
-            data.experience.push({
-                company: item.querySelector('[name="company"]').value,
-                position: item.querySelector('[name="position"]').value,
-                start_date: item.querySelector('[name="start_date"]').value,
-                end_date: item.querySelector('[name="end_date"]').value,
-                description: item.querySelector('[name="description"]').value.split('\n').filter(line => line.trim() !== '')
-            });
-        });
+        function switchLanguage() {
+            const lang = document.getElementById('languageSelector').value;
+            const t = translations[lang];
 
-        // Collect education
-        document.querySelectorAll('#education-list .dynamic-item').forEach(item => {
-            data.education.push({
-                institution: item.querySelector('[name="institution"]').value,
-                degree: item.querySelector('[name="degree"]').value,
-                start_date: item.querySelector('[name="start_date"]').value,
-                end_date: item.querySelector('[name="end_date"]').value
-            });
-        });
-
-        // Collect skills
-        document.querySelectorAll('#skills-list .col-md-4').forEach(item => {
-            data.skills.push({
-                name: item.querySelector('[name="skill_name"]').value,
-                level: item.querySelector('[name="skill_level"]').value
-            });
-        });
-
-        // Collect languages
-        document.querySelectorAll('#languages-list .col-md-4').forEach(item => {
-            const input = item.querySelector('[name="language_name"]');
-            if (input) data.languages.push(input.value);
-        });
-
-        return data;
-    }
-
-    function saveData() {
-        const data = collectData();
-        localStorage.setItem('cvData', JSON.stringify(data));
-    }
-
-    function loadData() {
-        const saved = localStorage.getItem('cvData');
-        if (!saved) return false;
-        
-        try {
-            const data = JSON.parse(saved);
-            const form = document.getElementById('cvForm');
-            
-            // Personal Info
-            const pi = data.personal_info;
-            form.querySelector('[name="full_name"]').value = pi.full_name || '';
-            form.querySelector('[name="email"]').value = pi.email || '';
-            form.querySelector('[name="phone"]').value = pi.phone || '';
-            form.querySelector('[name="location"]').value = pi.location || '';
-            form.querySelector('[name="website"]').value = pi.website || '';
-            form.querySelector('[name="linkedin"]').value = pi.linkedin || '';
-            form.querySelector('[name="summary"]').value = pi.summary || '';
-            
-            if (pi.profile_picture) {
-                const preview = document.getElementById('image-preview');
-                const previewImg = document.getElementById('preview-img');
-                previewImg.src = pi.profile_picture;
-                preview.style.display = 'block';
-            }
-
-            // Template and Language
-            if (data.template_name) {
-                const radio = form.querySelector(`input[name="template_name"][value="${data.template_name}"]`);
-                if (radio) radio.checked = true;
-            }
-            if (data.language) {
-                document.getElementById('languageSelector').value = data.language;
-            }
-
-            // Dynamic lists
-            const containers = [
-                { id: 'experience-list', template: 'experience-template', items: data.experience, fill: (el, d) => {
-                    el.querySelector('[name="company"]').value = d.company;
-                    el.querySelector('[name="position"]').value = d.position;
-                    el.querySelector('[name="start_date"]').value = d.start_date;
-                    el.querySelector('[name="end_date"]').value = d.end_date;
-                    el.querySelector('[name="description"]').value = d.description.join('\n');
-                }},
-                { id: 'education-list', template: 'education-template', items: data.education, fill: (el, d) => {
-                    el.querySelector('[name="institution"]').value = d.institution;
-                    el.querySelector('[name="degree"]').value = d.degree;
-                    el.querySelector('[name="start_date"]').value = d.start_date;
-                    el.querySelector('[name="end_date"]').value = d.end_date;
-                }},
-                { id: 'skills-list', template: 'skills-template', items: data.skills, fill: (el, d) => {
-                    el.querySelector('[name="skill_name"]').value = d.name;
-                    el.querySelector('[name="skill_level"]').value = d.level;
-                }},
-                { id: 'languages-list', template: 'languages-template', items: data.languages, fill: (el, d) => {
-                    el.querySelector('[name="language_name"]').value = d;
-                }}
-            ];
-
-            containers.forEach(c => {
-                const container = document.getElementById(c.id);
-                container.innerHTML = '';
-                if (c.items && c.items.length > 0) {
-                    c.items.forEach(itemData => {
-                        addItem(c.id, c.template);
-                        c.fill(container.lastElementChild, itemData);
-                    });
-                }
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (t[key]) el.textContent = t[key];
             });
 
+            document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-translate-placeholder');
+                if (t[key]) el.placeholder = t[key];
+            });
+        }
+
+        function addItem(containerId, templateId) {
+            const container = document.getElementById(containerId);
+            const template = document.getElementById(templateId);
+            const clone = template.content.cloneNode(true);
+            container.appendChild(clone);
             switchLanguage();
-            return true;
-        } catch (e) {
-            console.error("Error loading saved data", e);
-            return false;
-        }
-    }
-
-    // Initialization
-    if (!loadData()) {
-        // Initial items if no saved data
-        addItem('experience-list', 'experience-template');
-        addItem('education-list', 'education-template');
-        addItem('skills-list', 'skills-template');
-        addItem('languages-list', 'languages-template');
-        switchLanguage();
-    }
-
-    // Event listeners for persistence
-    document.getElementById('cvForm').addEventListener('input', saveData);
-    document.getElementById('languageSelector').addEventListener('change', saveData);
-
-    async function previewCV() {
-        const form = document.getElementById('cvForm');
-        
-        if (!form.checkValidity()) {
-            form.classList.add('was-validated');
-            const firstInvalid = form.querySelector(':invalid');
-            if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return;
+            schedulePreviewRefresh();
         }
 
-        const data = collectData();
-        const response = await fetch('/preview', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+        function removeItem(btn) {
+            const item = btn.closest('.dynamic-item, .col-md-4, .position-relative');
+            if (item) {
+                item.remove();
+                saveData();
+                schedulePreviewRefresh();
+            }
+        }
+
+        function previewImage(input) {
+            const preview = document.getElementById('image-preview');
+            const previewImg = document.getElementById('preview-img');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                    saveData();
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+                saveData();
+            }
+        }
+
+        function collectData() {
+            const form = document.getElementById('cvForm');
+            const formData = new FormData(form);
+            const previewImg = document.getElementById('preview-img');
+            const previewVisible = document.getElementById('image-preview').style.display !== 'none';
+
+            const data = {
+                personal_info: {
+                    full_name: formData.get('full_name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    location: formData.get('location'),
+                    website: formData.get('website'),
+                    linkedin: formData.get('linkedin'),
+                    profile_picture: previewVisible ? previewImg.src : null,
+                    summary: formData.get('summary')
+                },
+                experience: [],
+                education: [],
+                skills: [],
+                languages: [],
+                template_name: formData.get('template_name'),
+                language: document.getElementById('languageSelector').value
+            };
+
+            document.querySelectorAll('#experience-list .dynamic-item').forEach(item => {
+                data.experience.push({
+                    company: item.querySelector('[name="company"]').value,
+                    position: item.querySelector('[name="position"]').value,
+                    start_date: item.querySelector('[name="start_date"]').value,
+                    end_date: item.querySelector('[name="end_date"]').value,
+                    description: item.querySelector('[name="description"]').value.split('\n').filter(line => line.trim() !== '')
+                });
+            });
+
+            document.querySelectorAll('#education-list .dynamic-item').forEach(item => {
+                data.education.push({
+                    institution: item.querySelector('[name="institution"]').value,
+                    degree: item.querySelector('[name="degree"]').value,
+                    start_date: item.querySelector('[name="start_date"]').value,
+                    end_date: item.querySelector('[name="end_date"]').value
+                });
+            });
+
+            document.querySelectorAll('#skills-list .col-md-4').forEach(item => {
+                data.skills.push({
+                    name: item.querySelector('[name="skill_name"]').value,
+                    level: item.querySelector('[name="skill_level"]').value
+                });
+            });
+
+            document.querySelectorAll('#languages-list .col-md-4').forEach(item => {
+                const input = item.querySelector('[name="language_name"]');
+                if (input) data.languages.push(input.value);
+            });
+
+            return data;
+        }
+
+        function saveData() {
+            const data = collectData();
+            localStorage.setItem('cvData', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('cvData');
+            if (!saved) return false;
+
+            try {
+                const data = JSON.parse(saved);
+                const form = document.getElementById('cvForm');
+
+                const pi = data.personal_info;
+                form.querySelector('[name="full_name"]').value = pi.full_name || '';
+                form.querySelector('[name="email"]').value = pi.email || '';
+                form.querySelector('[name="phone"]').value = pi.phone || '';
+                form.querySelector('[name="location"]').value = pi.location || '';
+                form.querySelector('[name="website"]').value = pi.website || '';
+                form.querySelector('[name="linkedin"]').value = pi.linkedin || '';
+                form.querySelector('[name="summary"]').value = pi.summary || '';
+
+                if (pi.profile_picture) {
+                    const preview = document.getElementById('image-preview');
+                    const previewImg = document.getElementById('preview-img');
+                    previewImg.src = pi.profile_picture;
+                    preview.style.display = 'block';
+                }
+
+                if (data.template_name) {
+                    const radio = form.querySelector(`input[name="template_name"][value="${data.template_name}"]`);
+                    if (radio) radio.checked = true;
+                }
+                if (data.language) {
+                    document.getElementById('languageSelector').value = data.language;
+                }
+
+                const containers = [
+                    {
+                        id: 'experience-list', template: 'experience-template', items: data.experience, fill: (el, d) => {
+                            el.querySelector('[name="company"]').value = d.company;
+                            el.querySelector('[name="position"]').value = d.position;
+                            el.querySelector('[name="start_date"]').value = d.start_date;
+                            el.querySelector('[name="end_date"]').value = d.end_date;
+                            el.querySelector('[name="description"]').value = d.description.join('\n');
+                        }
+                    },
+                    {
+                        id: 'education-list', template: 'education-template', items: data.education, fill: (el, d) => {
+                            el.querySelector('[name="institution"]').value = d.institution;
+                            el.querySelector('[name="degree"]').value = d.degree;
+                            el.querySelector('[name="start_date"]').value = d.start_date;
+                            el.querySelector('[name="end_date"]').value = d.end_date;
+                        }
+                    },
+                    {
+                        id: 'skills-list', template: 'skills-template', items: data.skills, fill: (el, d) => {
+                            el.querySelector('[name="skill_name"]').value = d.name;
+                            el.querySelector('[name="skill_level"]').value = d.level;
+                        }
+                    },
+                    {
+                        id: 'languages-list', template: 'languages-template', items: data.languages, fill: (el, d) => {
+                            el.querySelector('[name="language_name"]').value = d;
+                        }
+                    }
+                ];
+
+                containers.forEach(c => {
+                    const container = document.getElementById(c.id);
+                    container.innerHTML = '';
+                    if (c.items && c.items.length > 0) {
+                        c.items.forEach(itemData => {
+                            addItem(c.id, c.template);
+                            c.fill(container.lastElementChild, itemData);
+                        });
+                    }
+                });
+
+                switchLanguage();
+                return true;
+            } catch (e) {
+                console.error("Error loading saved data", e);
+                return false;
+            }
+        }
+
+        // ── Live Preview ─────────────────────────────────────────
+        let previewDebounceTimer = null;
+
+        async function refreshPreview() {
+            const loadingEl = document.getElementById('preview-loading');
+            loadingEl.style.display = 'inline';
+
+            const data = collectData();
+            try {
+                const response = await fetch('/preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const html = await response.text();
+                    const iframe = document.getElementById('preview-iframe');
+                    // Write to srcdoc to avoid navigation / CORS issues
+                    iframe.srcdoc = html;
+                }
+            } catch (err) {
+                console.warn('Preview refresh failed', err);
+            } finally {
+                loadingEl.style.display = 'none';
+            }
+        }
+
+        function schedulePreviewRefresh() {
+            clearTimeout(previewDebounceTimer);
+            previewDebounceTimer = setTimeout(refreshPreview, 600);
+        }
+
+        // ── Initialization ───────────────────────────────────────
+        if (!loadData()) {
+            addItem('experience-list', 'experience-template');
+            addItem('education-list', 'education-template');
+            addItem('skills-list', 'skills-template');
+            addItem('languages-list', 'languages-template');
+            switchLanguage();
+        }
+
+        // Event listeners for persistence + live preview
+        document.getElementById('cvForm').addEventListener('input', () => {
+            saveData();
+            schedulePreviewRefresh();
+        });
+        document.getElementById('languageSelector').addEventListener('change', () => {
+            saveData();
+            schedulePreviewRefresh();
+        });
+        // Also trigger when template radio buttons change
+        document.querySelectorAll('input[name="template_name"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                saveData();
+                schedulePreviewRefresh();
+            });
         });
 
-        if (response.ok) {
-            const html = await response.text();
-            const previewWindow = window.open('', '_blank');
-            previewWindow.document.write(html);
-            previewWindow.document.close();
-        } else {
-            alert('Error generating preview');
-        }
-    }
+        // Initial preview render
+        refreshPreview();
 
-    document.getElementById('cvForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        
-        if (!form.checkValidity()) {
-            e.stopPropagation();
+        // ── PDF Generation ───────────────────────────────────────
+        document.getElementById('cvForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const form = e.target;
+
+            if (!form.checkValidity()) {
+                e.stopPropagation();
+                form.classList.add('was-validated');
+                const firstInvalid = form.querySelector(':invalid');
+                if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
             form.classList.add('was-validated');
-            const firstInvalid = form.querySelector(':invalid');
-            if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            return;
-        }
-        form.classList.add('was-validated');
 
-        const data = collectData();
+            const data = collectData();
 
-        const response = await fetch('/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
+            const response = await fetch('/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
 
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${data.personal_info.full_name.replace(/ /g, '_')}_CV.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        } else {
-            alert('Error generating CV');
-        }
-    };
-</script>
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${data.personal_info.full_name.replace(/ /g, '_')}_CV.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            } else {
+                alert('Error generating CV');
+            }
+        };
+    </script>
 </body>
+
 </html>
