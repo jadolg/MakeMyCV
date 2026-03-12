@@ -10,22 +10,31 @@
         @page :first {
             margin-top: 0;
         }
+        html {
+            background: linear-gradient(to right, #f8f9fa 30%, white 30%);
+            height: 100%;
+        }
         body {
             font-family: 'Liberation Sans', Arial, Helvetica, sans-serif;
             color: #444;
             line-height: 1.5;
             margin: 0;
             padding: 0;
-            display: flex;
-            min-height: 297mm;
+            background: transparent;
+        }
+        body::after {
+            content: "";
+            display: table;
+            clear: both;
         }
         .sidebar {
             width: 30%;
-            background-color: #f8f9fa;
-            height: 100%;
+            float: left;
             padding: 20px;
             box-sizing: border-box;
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
         .profile-img {
             width: 120px;
@@ -39,8 +48,12 @@
         }
         .main {
             width: 70%;
+            margin-left: 30%;
             padding: 20px;
             box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+            background-color: white;
         }
         h1 {
             font-size: 22pt;
