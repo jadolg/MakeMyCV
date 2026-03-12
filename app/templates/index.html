@@ -361,25 +361,29 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <input type="text" class="form-control" placeholder="Company" name="company"
-                        data-translate-placeholder="company" value="Tech Solutions Inc." required>
+                        data-translate-placeholder="company" required>
                 </div>
                 <div class="col-md-6">
                     <input type="text" class="form-control" placeholder="Position" name="position"
-                        data-translate-placeholder="position" value="Senior Developer" required>
+                        data-translate-placeholder="position" required>
                 </div>
                 <div class="col-md-6">
-                    <input type="text" class="form-control" placeholder="Start Date (e.g. Jan 2020)" name="start_date"
-                        data-translate-placeholder="start_date" value="Jan 2020" required>
+                    <label class="form-label" data-translate="start_date_edu">Start Date</label>
+                    <input type="month" class="form-control" name="start_date" required>
                 </div>
                 <div class="col-md-6">
-                    <input type="text" class="form-control" placeholder="End Date (or Present)" name="end_date"
-                        data-translate-placeholder="end_date" value="Present" required>
+                    <label class="form-label" data-translate="end_date_edu">End Date</label>
+                    <div class="input-group">
+                        <input type="month" class="form-control" name="end_date" required>
+                        <div class="input-group-text">
+                            <input class="form-check-input mt-0" type="checkbox" name="is_present" onchange="togglePresent(this)">
+                            <span class="ms-2" data-translate="present">Present</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-12">
                     <textarea class="form-control" placeholder="Key responsibilities (one per line)" name="description"
-                        data-translate-placeholder="responsibilities" rows="2" required>Led development of core API services using FastAPI.
-Optimized database performance by 40%.
-Managed a team of 3 junior developers.</textarea>
+                        data-translate-placeholder="responsibilities" rows="2" required></textarea>
                 </div>
             </div>
         </div>
@@ -398,19 +402,25 @@ Managed a team of 3 junior developers.</textarea>
             <div class="row g-3">
                 <div class="col-md-6">
                     <input type="text" class="form-control" placeholder="Institution" name="institution"
-                        data-translate-placeholder="institution" value="State University of Tech" required>
+                        data-translate-placeholder="institution" required>
                 </div>
                 <div class="col-md-6">
                     <input type="text" class="form-control" placeholder="Degree" name="degree"
-                        data-translate-placeholder="degree" value="B.Sc. in Computer Science" required>
+                        data-translate-placeholder="degree" required>
                 </div>
                 <div class="col-md-6">
-                    <input type="text" class="form-control" placeholder="Start Date" name="start_date"
-                        data-translate-placeholder="start_date_edu" value="Sep 2015" required>
+                    <label class="form-label" data-translate="start_date_edu">Start Date</label>
+                    <input type="month" class="form-control" name="start_date" required>
                 </div>
                 <div class="col-md-6">
-                    <input type="text" class="form-control" placeholder="End Date" name="end_date"
-                        data-translate-placeholder="end_date_edu" value="Jun 2019" required>
+                    <label class="form-label" data-translate="end_date_edu">End Date</label>
+                    <div class="input-group">
+                        <input type="month" class="form-control" name="end_date" required>
+                        <div class="input-group-text">
+                            <input class="form-check-input mt-0" type="checkbox" name="is_present" onchange="togglePresent(this)">
+                            <span class="ms-2" data-translate="present">Present</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -524,7 +534,8 @@ Managed a team of 3 junior developers.</textarea>
                 confirm_load_body: "Are you sure you want to load a new file? This will overwrite your current progress.",
                 cancel: "Cancel",
                 confirm: "Confirm",
-                invalid_image: "Please upload a valid image file (PNG, JPG, or WEBP)."
+                invalid_image: "Please upload a valid image file (PNG, JPG, or WEBP).",
+                present: "Present"
             },
             es: {
                 personal_info_header: "Información Personal",
@@ -571,9 +582,25 @@ Managed a team of 3 junior developers.</textarea>
                 confirm_load_body: "¿Estás seguro de que quieres cargar un nuevo archivo? Esto sobrescribirá tu progreso actual.",
                 cancel: "Cancelar",
                 confirm: "Confirmar",
-                invalid_image: "Por favor, sube un archivo de imagen válido (PNG, JPG o WEBP)."
+                invalid_image: "Por favor, sube un archivo de imagen válido (PNG, JPG o WEBP).",
+                present: "Actualidad"
             }
         };
+
+        function togglePresent(cb) {
+            const container = cb.closest('.dynamic-item');
+            const endDateInput = container.querySelector('[name="end_date"]');
+            if (cb.checked) {
+                endDateInput.disabled = true;
+                endDateInput.value = '';
+                endDateInput.required = false;
+            } else {
+                endDateInput.disabled = false;
+                endDateInput.required = true;
+            }
+            saveData();
+            schedulePreviewRefresh();
+        }
 
         function switchLanguage() {
             const lang = document.getElementById('languageSelector').value;
@@ -672,6 +699,7 @@ Managed a team of 3 junior developers.</textarea>
             const formData = new FormData(form);
             const previewImg = document.getElementById('preview-img');
             const previewVisible = document.getElementById('image-preview').style.display !== 'none';
+            const lang = document.getElementById('languageSelector').value;
 
             const data = {
                 personal_info: {
@@ -689,7 +717,7 @@ Managed a team of 3 junior developers.</textarea>
                 skills: [],
                 languages: [],
                 template_name: formData.get('template_name'),
-                language: document.getElementById('languageSelector').value
+                language: lang
             };
 
             document.querySelectorAll('#experience-list .dynamic-item').forEach(item => {
@@ -698,6 +726,7 @@ Managed a team of 3 junior developers.</textarea>
                     position: item.querySelector('[name="position"]').value,
                     start_date: item.querySelector('[name="start_date"]').value,
                     end_date: item.querySelector('[name="end_date"]').value,
+                    is_present: item.querySelector('[name="is_present"]').checked,
                     description: item.querySelector('[name="description"]').value.split('\n').filter(line => line.trim() !== '')
                 });
             });
@@ -707,7 +736,8 @@ Managed a team of 3 junior developers.</textarea>
                     institution: item.querySelector('[name="institution"]').value,
                     degree: item.querySelector('[name="degree"]').value,
                     start_date: item.querySelector('[name="start_date"]').value,
-                    end_date: item.querySelector('[name="end_date"]').value
+                    end_date: item.querySelector('[name="end_date"]').value,
+                    is_present: item.querySelector('[name="is_present"]').checked
                 });
             });
 
@@ -720,6 +750,38 @@ Managed a team of 3 junior developers.</textarea>
             document.querySelectorAll('#languages-list .dynamic-list-item').forEach(item => {
                 const input = item.querySelector('[name="language_name"]');
                 if (input) data.languages.push(input.value);
+            });
+
+            return data;
+        }
+
+        function prepareDataForApi(rawData) {
+            const lang = rawData.language;
+            const t = translations[lang];
+            const data = JSON.parse(JSON.stringify(rawData)); 
+
+            const formatDisplayDate = (val, isPresent) => {
+                if (isPresent) return t.present;
+                if (!val) return "";
+                const [y, m] = val.split('-');
+                if (!y || !m) return val; // Fallback for already formatted data
+                const months = {
+                    en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    es: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+                };
+                return `${months[lang][parseInt(m) - 1]} ${y}`;
+            };
+
+            data.experience.forEach(exp => {
+                exp.start_date = formatDisplayDate(exp.start_date, false);
+                exp.end_date = formatDisplayDate(exp.end_date, exp.is_present);
+                delete exp.is_present;
+            });
+
+            data.education.forEach(edu => {
+                edu.start_date = formatDisplayDate(edu.start_date, false);
+                edu.end_date = formatDisplayDate(edu.end_date, edu.is_present);
+                delete edu.is_present;
             });
 
             return data;
@@ -771,32 +833,71 @@ Managed a team of 3 junior developers.</textarea>
                     document.getElementById('languageSelector').value = data.language;
                 }
 
+                const formatForMonthInput = (str) => {
+                    if (!str) return '';
+                    if (str.match(/^\d{4}-\d{2}$/)) return str;
+                    return '';
+                };
+
                 const containers = [
                     {
                         id: 'experience-list', template: 'experience-template', items: data.experience, fill: (el, d) => {
-                            el.querySelector('[name="company"]').value = d.company;
-                            el.querySelector('[name="position"]').value = d.position;
-                            el.querySelector('[name="start_date"]').value = d.start_date;
-                            el.querySelector('[name="end_date"]').value = d.end_date;
-                            el.querySelector('[name="description"]').value = d.description.join('\n');
+                            el.querySelector('[name="company"]').value = d.company || '';
+                            el.querySelector('[name="position"]').value = d.position || '';
+                            el.querySelector('[name="description"]').value = (d.description || []).join('\n');
+                            
+                            const isPresent = d.is_present || d.end_date === translations.en.present || d.end_date === translations.es.present || d.end_date === 'Present' || d.end_date === 'Actualidad';
+                            
+                            el.querySelector('[name="start_date"]').value = formatForMonthInput(d.start_date);
+                            const endInput = el.querySelector('[name="end_date"]');
+                            const presentCb = el.querySelector('[name="is_present"]');
+                            
+                            if (isPresent) {
+                                presentCb.checked = true;
+                                endInput.disabled = true;
+                                endInput.required = false;
+                                endInput.value = '';
+                            } else {
+                                presentCb.checked = false;
+                                endInput.disabled = false;
+                                endInput.required = true;
+                                endInput.value = formatForMonthInput(d.end_date);
+                            }
                         }
                     },
                     {
                         id: 'education-list', template: 'education-template', items: data.education, fill: (el, d) => {
-                            el.querySelector('[name="institution"]').value = d.institution;
-                            el.querySelector('[name="degree"]').value = d.degree;
-                            el.querySelector('[name="start_date"]').value = d.start_date;
-                            el.querySelector('[name="end_date"]').value = d.end_date;
+                            el.querySelector('[name="institution"]').value = d.institution || '';
+                            el.querySelector('[name="degree"]').value = d.degree || '';
+                            
+                            const isPresent = d.is_present || d.end_date === translations.en.present || d.end_date === translations.es.present || d.end_date === 'Present' || d.end_date === 'Actualidad';
+
+                            el.querySelector('[name="start_date"]').value = formatForMonthInput(d.start_date);
+                            const endInput = el.querySelector('[name="end_date"]');
+                            const presentCb = el.querySelector('[name="is_present"]');
+
+                            if (isPresent) {
+                                presentCb.checked = true;
+                                endInput.disabled = true;
+                                endInput.required = false;
+                                endInput.value = '';
+                            } else {
+                                presentCb.checked = false;
+                                endInput.disabled = false;
+                                endInput.required = true;
+                                endInput.value = formatForMonthInput(d.end_date);
+                            }
                         }
                     },
                     {
                         id: 'skills-list', template: 'skills-template', items: data.skills, fill: (el, d) => {
-                            el.querySelector('[name="skill_name"]').value = d.name;
+                            el.querySelector('[name="skill_name"]').value = d.name || '';
                         }
                     },
                     {
                         id: 'languages-list', template: 'languages-template', items: data.languages, fill: (el, d) => {
-                            el.querySelector('[name="language_name"]').value = d;
+                            const input = el.querySelector('[name="language_name"]');
+                            if (input) input.value = d || '';
                         }
                     }
                 ];
@@ -867,12 +968,14 @@ Managed a team of 3 junior developers.</textarea>
             const currentScroll = scrollEl.scrollTop;
             loadingEl.style.display = 'inline';
 
-            const data = collectData();
+            const rawData = collectData();
+            const apiData = prepareDataForApi(rawData);
+
             try {
                 const response = await fetch('/preview', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(apiData)
                 });
 
                 if (response.ok) {
@@ -903,7 +1006,7 @@ Managed a team of 3 junior developers.</textarea>
                             
                             container.style.height = newIframe.style.height;
                             scrollEl.scrollTop = currentScroll;
-                        }, 100); // Small buffer for PDF plugin initialization
+                        }, 100); 
                     };
                 }
             } catch (err) {
@@ -920,15 +1023,36 @@ Managed a team of 3 junior developers.</textarea>
 
         if (!loadData()) {
             addItem('experience-list', 'experience-template');
+            const exp = document.querySelector('#experience-list .dynamic-item');
+            exp.querySelector('[name="company"]').value = "Tech Solutions Inc.";
+            exp.querySelector('[name="position"]').value = "Senior Developer";
+            exp.querySelector('[name="start_date"]').value = "2020-01";
+            exp.querySelector('[name="is_present"]').checked = true;
+            exp.querySelector('[name="end_date"]').disabled = true;
+            exp.querySelector('[name="end_date"]').required = false;
+            exp.querySelector('[name="description"]').value = "Led development of core API services using FastAPI.\nOptimized database performance by 40%.\nManaged a team of 3 junior developers.";
+
             addItem('education-list', 'education-template');
+            const edu = document.querySelector('#education-list .dynamic-item');
+            edu.querySelector('[name="institution"]').value = "State University of Tech";
+            edu.querySelector('[name="degree"]').value = "B.Sc. in Computer Science";
+            edu.querySelector('[name="start_date"]').value = "2015-09";
+            edu.querySelector('[name="end_date"]').value = "2019-06";
+
             addItem('skills-list', 'skills-template');
             addItem('languages-list', 'languages-template');
             switchLanguage();
         }
 
-        document.getElementById('cvForm').addEventListener('input', () => {
+        document.getElementById('cvForm').addEventListener('input', (e) => {
             saveData();
             schedulePreviewRefresh();
+        });
+        document.getElementById('cvForm').addEventListener('change', (e) => {
+            if (e.target.name === 'is_present' || e.target.type === 'month') {
+                saveData();
+                schedulePreviewRefresh();
+            }
         });
         document.getElementById('languageSelector').addEventListener('change', () => {
             saveData();
@@ -956,12 +1080,13 @@ Managed a team of 3 junior developers.</textarea>
             }
             form.classList.add('was-validated');
 
-            const data = collectData();
+            const rawData = collectData();
+            const apiData = prepareDataForApi(rawData);
 
             const response = await fetch('/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(apiData)
             });
 
             if (response.ok) {
@@ -969,7 +1094,7 @@ Managed a team of 3 junior developers.</textarea>
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${data.personal_info.full_name.replace(/ /g, '_')}_CV.pdf`;
+                a.download = `${apiData.personal_info.full_name.replace(/ /g, '_')}_CV.pdf`;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
