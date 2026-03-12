@@ -113,6 +113,13 @@
             <h1>{{ data.personal_info.full_name }}</h1>
             <p style="font-size: 10pt; font-style: italic;">{{ data.personal_info.summary }}</p>
             
+            <h2>{{ t.skills }}</h2>
+            <ul class="skill-list">
+                {% for skill in data.skills %}
+                <li><strong>{{ skill.name }}</strong></li>
+                {% endfor %}
+            </ul>
+            
             <h2>{{ t.contact }}</h2>
             <div class="contact-item">
                 <svg class="contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
@@ -141,12 +148,6 @@
             </div>
             {% endif %}
             
-            <h2>{{ t.skills }}</h2>
-            <ul class="skill-list">
-                {% for skill in data.skills %}
-                <li><strong>{{ skill.name }}</strong></li>
-                {% endfor %}
-            </ul>
 
             {% if data.languages %}
             <h2>{{ t.languages }}</h2>

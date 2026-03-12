@@ -170,6 +170,15 @@
     </div>
 
     <div class="section">
+        <div class="section-title">{{ t.skills }}</div>
+        <div class="skills-text">
+            {% for skill in data.skills %}
+            <strong>{{ skill.name }}</strong>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="section">
         <div class="section-title">{{ t.experience }}</div>
         {% for exp in data.experience %}
         <div class="item">
@@ -201,14 +210,6 @@
         {% endfor %}
     </div>
 
-    <div class="section">
-        <div class="section-title">{{ t.skills }}</div>
-        <div class="skills-text">
-            {% for skill in data.skills %}
-            <strong>{{ skill.name }}</strong>{% if not loop.last %}, {% endif %}
-            {% endfor %}
-        </div>
-    </div>
 
     {% if data.languages %}
     <div class="section">
