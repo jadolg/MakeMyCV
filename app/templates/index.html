@@ -347,7 +347,11 @@
     <!-- Templates for JS -->
     <template id="experience-template">
         <div class="dynamic-item">
-            <div class="text-end mb-2">
+            <div class="d-flex justify-content-between mb-2">
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="moveItemUp(this)">↑</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="moveItemDown(this)">↓</button>
+                </div>
                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)"
                     data-translate="remove_item">Remove</button>
             </div>
@@ -380,7 +384,11 @@ Managed a team of 3 junior developers.</textarea>
 
     <template id="education-template">
         <div class="dynamic-item">
-            <div class="text-end mb-2">
+            <div class="d-flex justify-content-between mb-2">
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="moveItemUp(this)">↑</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="moveItemDown(this)">↓</button>
+                </div>
                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(this)"
                     data-translate="remove_item">Remove</button>
             </div>
@@ -406,8 +414,10 @@ Managed a team of 3 junior developers.</textarea>
     </template>
 
     <template id="skills-template">
-        <div class="col-md-4">
+        <div class="col-12 mb-2 dynamic-list-item">
             <div class="input-group">
+                <button type="button" class="btn btn-outline-secondary" onclick="moveItemUp(this)">↑</button>
+                <button type="button" class="btn btn-outline-secondary" onclick="moveItemDown(this)">↓</button>
                 <input type="text" class="form-control" placeholder="Skill" name="skill_name"
                     data-translate-placeholder="skill" value="Python" required>
                 <input type="text" class="form-control" placeholder="Level" name="skill_level"
@@ -418,8 +428,10 @@ Managed a team of 3 junior developers.</textarea>
     </template>
 
     <template id="languages-template">
-        <div class="col-md-4 position-relative">
+        <div class="col-12 mb-2 dynamic-list-item position-relative">
             <div class="input-group">
+                <button type="button" class="btn btn-outline-secondary" onclick="moveItemUp(this)">↑</button>
+                <button type="button" class="btn btn-outline-secondary" onclick="moveItemDown(this)">↓</button>
                 <input type="text" class="form-control" placeholder="Language (e.g. English)" name="language_name"
                     data-translate-placeholder="language_placeholder_field" value="English" required>
                 <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">×</button>
@@ -532,9 +544,27 @@ Managed a team of 3 junior developers.</textarea>
         }
 
         function removeItem(btn) {
-            const item = btn.closest('.dynamic-item, .col-md-4, .position-relative');
+            const item = btn.closest('.dynamic-item, .dynamic-list-item');
             if (item) {
                 item.remove();
+                saveData();
+                schedulePreviewRefresh();
+            }
+        }
+
+        function moveItemUp(btn) {
+            const item = btn.closest('.dynamic-item, .dynamic-list-item');
+            if (item && item.previousElementSibling) {
+                item.parentNode.insertBefore(item, item.previousElementSibling);
+                saveData();
+                schedulePreviewRefresh();
+            }
+        }
+
+        function moveItemDown(btn) {
+            const item = btn.closest('.dynamic-item, .dynamic-list-item');
+            if (item && item.nextElementSibling) {
+                item.parentNode.insertBefore(item.nextElementSibling, item);
                 saveData();
                 schedulePreviewRefresh();
             }
@@ -601,14 +631,14 @@ Managed a team of 3 junior developers.</textarea>
                 });
             });
 
-            document.querySelectorAll('#skills-list .col-md-4').forEach(item => {
+            document.querySelectorAll('#skills-list .dynamic-list-item').forEach(item => {
                 data.skills.push({
                     name: item.querySelector('[name="skill_name"]').value,
                     level: item.querySelector('[name="skill_level"]').value
                 });
             });
 
-            document.querySelectorAll('#languages-list .col-md-4').forEach(item => {
+            document.querySelectorAll('#languages-list .dynamic-list-item').forEach(item => {
                 const input = item.querySelector('[name="language_name"]');
                 if (input) data.languages.push(input.value);
             });
