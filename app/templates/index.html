@@ -200,6 +200,48 @@
 
             <form id="cvForm" novalidate>
                 <div class="form-section">
+                    <h3 data-translate="choose_template" class="mb-4">Choose Template</h3>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="template-card" for="t1">
+                                <input type="radio" name="template_name" value="template1" id="t1" checked
+                                    onchange="saveData()">
+                                <div class="card h-100">
+                                    <img src="/static/template1.svg" class="card-img-top" alt="Template 1">
+                                    <div class="card-body text-center p-2">
+                                        <h6 class="card-title mb-0" data-translate="template_modern">Modern</h6>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="template-card" for="t2">
+                                <input type="radio" name="template_name" value="template2" id="t2"
+                                    onchange="saveData()">
+                                <div class="card h-100">
+                                    <img src="/static/template2.svg" class="card-img-top" alt="Template 2">
+                                    <div class="card-body text-center p-2">
+                                        <h6 class="card-title mb-0" data-translate="template_classic">Classic</h6>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="template-card" for="t3">
+                                <input type="radio" name="template_name" value="template3" id="t3"
+                                    onchange="saveData()">
+                                <div class="card h-100">
+                                    <img src="/static/template3.svg" class="card-img-top" alt="Template 3">
+                                    <div class="card-body text-center p-2">
+                                        <h6 class="card-title mb-0" data-translate="template_minimalist">Minimalist</h6>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
                     <h3 data-translate="personal_info_header">Personal Information</h3>
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -302,48 +344,6 @@
                         <button type="button" class="btn btn-sm btn-outline-primary"
                             onclick="addItem('languages-list', 'languages-template'); saveData()"
                             data-translate="add_language">+ Add Language</button>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <h3 data-translate="choose_template" class="mb-4">Choose Template</h3>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="template-card" for="t1">
-                                <input type="radio" name="template_name" value="template1" id="t1" checked
-                                    onchange="saveData()">
-                                <div class="card h-100">
-                                    <img src="/static/template1.svg" class="card-img-top" alt="Template 1">
-                                    <div class="card-body text-center p-2">
-                                        <h6 class="card-title mb-0" data-translate="template_modern">Modern</h6>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="template-card" for="t2">
-                                <input type="radio" name="template_name" value="template2" id="t2"
-                                    onchange="saveData()">
-                                <div class="card h-100">
-                                    <img src="/static/template2.svg" class="card-img-top" alt="Template 2">
-                                    <div class="card-body text-center p-2">
-                                        <h6 class="card-title mb-0" data-translate="template_classic">Classic</h6>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="template-card" for="t3">
-                                <input type="radio" name="template_name" value="template3" id="t3"
-                                    onchange="saveData()">
-                                <div class="card h-100">
-                                    <img src="/static/template3.svg" class="card-img-top" alt="Template 3">
-                                    <div class="card-body text-center p-2">
-                                        <h6 class="card-title mb-0" data-translate="template_minimalist">Minimalist</h6>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
                     </div>
                 </div>
 
