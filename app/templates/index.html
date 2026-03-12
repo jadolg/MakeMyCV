@@ -92,6 +92,11 @@
             border-bottom: 1px solid #eee;
         }
 
+        textarea {
+            resize: none;
+            overflow: hidden;
+        }
+
         .was-validated .form-control:invalid {
             border-color: #dc3545;
             background-color: #fff8f8;
@@ -649,6 +654,11 @@
             window.location.reload();
         }
 
+        function resizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
         function addItem(containerId, templateId) {
             const container = document.getElementById(containerId);
             const template = document.getElementById(templateId);
@@ -656,9 +666,11 @@
             const newElement = clone.firstElementChild;
             container.appendChild(clone);
             
-            // Auto-focus the first input field in the new item
             const firstInput = newElement.querySelector('input, textarea');
             if (firstInput) firstInput.focus();
+
+            // Trigger resize for any textarea in the new item
+            newElement.querySelectorAll('textarea').forEach(resizeTextarea);
 
             switchLanguage();
             schedulePreviewRefresh();
@@ -940,6 +952,8 @@
                 });
 
                 switchLanguage();
+                // Resize all textareas after loading content
+                document.querySelectorAll('textarea').forEach(resizeTextarea);
                 return true;
             } catch (e) {
                 console.error("Error populating form", e);
@@ -1075,6 +1089,9 @@
         }
 
         document.getElementById('cvForm').addEventListener('input', (e) => {
+            if (e.target.tagName === 'TEXTAREA') {
+                resizeTextarea(e.target);
+            }
             saveData();
             schedulePreviewRefresh();
         });
