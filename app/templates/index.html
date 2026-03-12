@@ -432,7 +432,7 @@
                 <button type="button" class="btn btn-outline-secondary" onclick="moveItemUp(this)">↑</button>
                 <button type="button" class="btn btn-outline-secondary" onclick="moveItemDown(this)">↓</button>
                 <input type="text" class="form-control" placeholder="Skill" name="skill_name"
-                    data-translate-placeholder="skill" value="Python" required>
+                    data-translate-placeholder="skill" required>
                 <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">×</button>
             </div>
         </div>
@@ -444,7 +444,7 @@
                 <button type="button" class="btn btn-outline-secondary" onclick="moveItemUp(this)">↑</button>
                 <button type="button" class="btn btn-outline-secondary" onclick="moveItemDown(this)">↓</button>
                 <input type="text" class="form-control" placeholder="Language (e.g. English)" name="language_name"
-                    data-translate-placeholder="language_placeholder_field" value="English" required>
+                    data-translate-placeholder="language_placeholder_field" required>
                 <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">×</button>
             </div>
         </div>
@@ -1046,7 +1046,11 @@
             edu.querySelector('[name="end_date"]').value = "2019-06";
 
             addItem('skills-list', 'skills-template');
+            document.querySelector('#skills-list [name="skill_name"]').value = "Python";
+
             addItem('languages-list', 'languages-template');
+            document.querySelector('#languages-list [name="language_name"]').value = "English";
+
             switchLanguage();
         }
 
