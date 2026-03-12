@@ -896,6 +896,7 @@ Managed a team of 3 junior developers.</textarea>
                     body {
                         width: ${A4_W_PX}px !important;
                         margin: 0 !important;
+                        padding: 0 !important;
                         box-shadow: none !important;
                         position: relative;
                         overflow: hidden !important;
@@ -1008,7 +1009,9 @@ Managed a team of 3 junior developers.</textarea>
                         currentPageTop = 0;
                         for (let i = 1; i < 20; i++) {
                             const gutterTop = currentPageTop + pageH;
-                            if (gutterTop > body.scrollHeight - 50) break;
+                            // Only add a gutter if there is substantial content remaining 
+                            // (at least more than the gutter height itself)
+                            if (gutterTop > body.scrollHeight - (gutterH + 20)) break;
                             
                             const gutter = document.createElement('div');
                             gutter.className = 'page-gutter';
