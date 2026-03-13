@@ -737,7 +737,7 @@
             textarea.style.height = textarea.scrollHeight + 'px';
         }
 
-        function addItem(containerId, templateId) {
+        function addItem(containerId, templateId, shouldFocus = true) {
             const container = document.getElementById(containerId);
             const template = document.getElementById(templateId);
             const clone = template.content.cloneNode(true);
@@ -745,7 +745,7 @@
             container.appendChild(clone);
             
             const firstInput = newElement.querySelector('input, textarea');
-            if (firstInput) firstInput.focus();
+            if (firstInput && shouldFocus) firstInput.focus();
 
             // Trigger resize for any textarea in the new item
             newElement.querySelectorAll('textarea').forEach(resizeTextarea);
@@ -1017,7 +1017,7 @@
                     container.innerHTML = '';
                     if (c.items && c.items.length > 0) {
                         c.items.forEach(itemData => {
-                            addItem(c.id, c.template);
+                            addItem(c.id, c.template, false);
                             c.fill(container.lastElementChild, itemData);
                         });
                     }
@@ -1148,7 +1148,7 @@
         }
 
         if (!loadData()) {
-            addItem('experience-list', 'experience-template');
+            addItem('experience-list', 'experience-template', false);
             const exp = document.querySelector('#experience-list .dynamic-item');
             exp.querySelector('[name="company"]').value = "Tech Solutions Inc.";
             exp.querySelector('[name="position"]').value = "Senior Developer";
@@ -1158,7 +1158,7 @@
             exp.querySelector('[name="end_date"]').required = false;
             exp.querySelector('[name="description"]').value = "Led development of core API services using FastAPI.\nOptimized database performance by 40%.\nManaged a team of 3 junior developers.";
 
-            addItem('education-list', 'education-template');
+            addItem('education-list', 'education-template', false);
             const edu = document.querySelector('#education-list .dynamic-item');
             edu.querySelector('[name="institution"]').value = "State University of Tech";
             edu.querySelector('[name="degree"]').value = "B.Sc. in Computer Science";
