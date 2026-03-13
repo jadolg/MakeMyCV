@@ -175,6 +175,57 @@
             transition: opacity 0.15s ease-in-out;
             background: #525659;
         }
+
+        /* Tag Input Styles */
+        .tag-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 5px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background-color: #fff;
+            min-height: 38px;
+            cursor: text;
+        }
+
+        .tag-input-container:focus-within {
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25);
+        }
+
+        .tag {
+            display: flex;
+            align-items: center;
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+
+        .tag .remove-tag {
+            margin-left: 6px;
+            cursor: pointer;
+            color: #adb5bd;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .tag .remove-tag:hover {
+            color: #dc3545;
+        }
+
+        .tag-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 4px 8px;
+            min-width: 120px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -297,17 +348,11 @@
                 </div>
 
                 <div class="form-section">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="mb-3">
                         <h3 data-translate="skills_header">Skills</h3>
-                        <button type="button" class="btn btn-sm btn-outline-primary"
-                            onclick="addItem('skills-list', 'skills-template'); saveData()" data-translate="add_skill">+
-                            Add Skill</button>
                     </div>
-                    <div id="skills-list" class="row g-2"></div>
-                    <div class="text-end mt-3">
-                        <button type="button" class="btn btn-sm btn-outline-primary"
-                            onclick="addItem('skills-list', 'skills-template'); saveData()" data-translate="add_skill">+
-                            Add Skill</button>
+                    <div id="skills-tag-container" class="tag-input-container" onclick="focusInput('skills-tag-input')">
+                        <input type="text" id="skills-tag-input" class="tag-input" data-translate-placeholder="skill" placeholder="Type and press Enter or comma" onkeydown="handleTagInput(event, 'skills-tag-container')">
                     </div>
                 </div>
 
@@ -342,17 +387,11 @@
                 </div>
 
                 <div class="form-section">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="mb-3">
                         <h3 data-translate="languages_header">Languages</h3>
-                        <button type="button" class="btn btn-sm btn-outline-primary"
-                            onclick="addItem('languages-list', 'languages-template'); saveData()"
-                            data-translate="add_language">+ Add Language</button>
                     </div>
-                    <div id="languages-list" class="row g-2"></div>
-                    <div class="text-end mt-3">
-                        <button type="button" class="btn btn-sm btn-outline-primary"
-                            onclick="addItem('languages-list', 'languages-template'); saveData()"
-                            data-translate="add_language">+ Add Language</button>
+                    <div id="languages-tag-container" class="tag-input-container" onclick="focusInput('languages-tag-input')">
+                        <input type="text" id="languages-tag-input" class="tag-input" data-translate-placeholder="language_placeholder_field" placeholder="Type and press Enter or comma" onkeydown="handleTagInput(event, 'languages-tag-container')">
                     </div>
                 </div>
 
@@ -459,30 +498,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </template>
-
-    <template id="skills-template">
-        <div class="col-12 mb-2 dynamic-list-item">
-            <div class="input-group">
-                <button type="button" class="btn btn-outline-secondary" onclick="moveItemUp(this)">↑</button>
-                <button type="button" class="btn btn-outline-secondary" onclick="moveItemDown(this)">↓</button>
-                <input type="text" class="form-control" placeholder="Skill" name="skill_name"
-                    data-translate-placeholder="skill" required>
-                <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">×</button>
-            </div>
-        </div>
-    </template>
-
-    <template id="languages-template">
-        <div class="col-12 mb-2 dynamic-list-item position-relative">
-            <div class="input-group">
-                <button type="button" class="btn btn-outline-secondary" onclick="moveItemUp(this)">↑</button>
-                <button type="button" class="btn btn-outline-secondary" onclick="moveItemDown(this)">↓</button>
-                <input type="text" class="form-control" placeholder="Language (e.g. English)" name="language_name"
-                    data-translate-placeholder="language_placeholder_field" required>
-                <button type="button" class="btn btn-outline-danger" onclick="removeItem(this)">×</button>
             </div>
         </div>
     </template>
@@ -660,6 +675,51 @@
             });
         }
 
+        /* Tag Input Functions */
+        function focusInput(id) {
+            document.getElementById(id).focus();
+        }
+
+        function handleTagInput(event, containerId) {
+            const input = event.target;
+            const value = input.value.trim();
+
+            if ((event.key === 'Enter' || event.key === ',') && value) {
+                event.preventDefault();
+                const cleanValue = value.replace(/,$/, '').trim();
+                if (cleanValue) {
+                    addTag(containerId, cleanValue);
+                    input.value = '';
+                    saveData();
+                    schedulePreviewRefresh();
+                }
+            } else if (event.key === 'Backspace' && !value) {
+                const tags = document.querySelectorAll(`#${containerId} .tag`);
+                if (tags.length > 0) {
+                    tags[tags.length - 1].remove();
+                    saveData();
+                    schedulePreviewRefresh();
+                }
+            }
+        }
+
+        function addTag(containerId, text) {
+            const container = document.getElementById(containerId);
+            const input = container.querySelector('.tag-input');
+            
+            // Avoid duplicates
+            const existingTags = Array.from(container.querySelectorAll('.tag')).map(t => t.firstChild.textContent.trim());
+            if (existingTags.includes(text)) {
+                return;
+            }
+
+            const tag = document.createElement('div');
+            tag.className = 'tag';
+            tag.innerHTML = `${text}<span class="remove-tag" onclick="this.parentElement.remove(); saveData(); schedulePreviewRefresh();">×</span>`;
+            
+            container.insertBefore(tag, input);
+        }
+
         function triggerImport() {
             const modalEl = document.getElementById('loadModal');
             const modal = bootstrap.Modal.getInstance(modalEl);
@@ -800,15 +860,14 @@
                 });
             });
 
-            document.querySelectorAll('#skills-list .dynamic-list-item').forEach(item => {
+            document.querySelectorAll('#skills-tag-container .tag').forEach(tag => {
                 data.skills.push({
-                    name: item.querySelector('[name="skill_name"]').value
+                    name: tag.firstChild.textContent.trim()
                 });
             });
 
-            document.querySelectorAll('#languages-list .dynamic-list-item').forEach(item => {
-                const input = item.querySelector('[name="language_name"]');
-                if (input) data.languages.push(input.value);
+            document.querySelectorAll('#languages-tag-container .tag').forEach(tag => {
+                data.languages.push(tag.firstChild.textContent.trim());
             });
 
             return data;
@@ -950,17 +1009,6 @@
                                 endInput.value = formatForMonthInput(d.end_date);
                             }
                         }
-                    },
-                    {
-                        id: 'skills-list', template: 'skills-template', items: data.skills, fill: (el, d) => {
-                            el.querySelector('[name="skill_name"]').value = d.name || '';
-                        }
-                    },
-                    {
-                        id: 'languages-list', template: 'languages-template', items: data.languages, fill: (el, d) => {
-                            const input = el.querySelector('[name="language_name"]');
-                            if (input) input.value = d || '';
-                        }
                     }
                 ];
 
@@ -974,6 +1022,20 @@
                         });
                     }
                 });
+
+                // Clear and Load Skills Tags
+                const skillsContainer = document.getElementById('skills-tag-container');
+                skillsContainer.querySelectorAll('.tag').forEach(t => t.remove());
+                if (data.skills && data.skills.length > 0) {
+                    data.skills.forEach(s => addTag('skills-tag-container', s.name));
+                }
+
+                // Clear and Load Languages Tags
+                const languagesContainer = document.getElementById('languages-tag-container');
+                languagesContainer.querySelectorAll('.tag').forEach(t => t.remove());
+                if (data.languages && data.languages.length > 0) {
+                    data.languages.forEach(l => addTag('languages-tag-container', l));
+                }
 
                 switchLanguage();
                 // Resize all textareas after loading content
@@ -1103,11 +1165,8 @@
             edu.querySelector('[name="start_date"]').value = "2015-09";
             edu.querySelector('[name="end_date"]').value = "2019-06";
 
-            addItem('skills-list', 'skills-template');
-            document.querySelector('#skills-list [name="skill_name"]').value = "Python";
-
-            addItem('languages-list', 'languages-template');
-            document.querySelector('#languages-list [name="language_name"]').value = "English";
+            addTag('skills-tag-container', 'Python');
+            addTag('languages-tag-container', 'English');
 
             switchLanguage();
         }
