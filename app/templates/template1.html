@@ -104,13 +104,15 @@
         }
         .item {
             margin-bottom: 18px;
-            break-inside: avoid;
+            orphans: 3;
+            widows: 3;
         }
         .item-header {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             margin-bottom: 3px;
+            break-after: avoid;
         }
         .item-title {
             font-size: 12pt;

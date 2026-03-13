@@ -88,11 +88,13 @@
         }
         .item {
             margin-bottom: 15px;
-            break-inside: avoid;
+            orphans: 3;
+            widows: 3;
         }
         .item-title {
             font-weight: bold;
             color: #333;
+            break-after: avoid;
         }
         .item-meta {
             font-size: 9pt;
@@ -101,6 +103,7 @@
             display: flex;
             justify-content: space-between;
             align-items: baseline;
+            break-after: avoid;
         }
         .skill-list {
             font-size: 9pt;

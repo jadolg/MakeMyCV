@@ -72,12 +72,17 @@
         .item {
             margin-bottom: 15px;
             position: relative;
-            break-inside: avoid;
+            orphans: 3;
+            widows: 3;
         }
         .item-header {
             display: flex;
             justify-content: space-between;
             font-size: 11pt;
+            break-after: avoid;
+        }
+        .item-subheader {
+            break-after: avoid;
         }
         .item-title {
             color: #000;
